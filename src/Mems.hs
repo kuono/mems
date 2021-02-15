@@ -27,7 +27,7 @@ module Mems
             , dummyData807d
             , mneUnknown
             , mname
-) where
+,opnpr,opnac) where
 import qualified Brick.BChan as BC
 import qualified Data.ByteString.Char8 as BS
 import qualified Control.Exception as Ex
