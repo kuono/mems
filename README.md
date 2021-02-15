@@ -2,18 +2,19 @@
 
 ![Haskell CI](https://github.com/kuono/mems/workflows/Haskell%20CI/badge.svg)
 
-Tools for Rover Mini ECU development. 
+Tools for Rover Mini MEMS (ECU). 
 
-# 参考情報
+# Abstract
 
+mems is a computer system set on Rover Mini, the great compact automobile developed in 20th century, to control the vihicle electric components like injection, throttle position, security alarm, air conditioner and so on.
+
+This library in developed to produce MEMS monitor using Haskell, the gereat computer language.
+
+Original idea was studied by an engineer in England.
+ 
 ## 開発課題アイディア
 
-- TonaTona ライブラリを使用し始める
--- 設定ファイルに初期値を書き込んでおく（接続に成功したポート名くらい？）
-- UI として新たにHTML生成する機能を加える
-- モデルに，array構造で保持するmutableな直近データを加える
 - 型定義や関数の置き場所を再度整理し，モジュールの独立性を高める
-
 - ひょっとして TestBits でうまくエラーコードを検出できていない？
 - [こちら](https://minkara.carview.co.jp/userid/2834887/car/2442400/4981106/6/note.aspx#title)参照
 - Status byte 1 (0x0d)
@@ -48,7 +49,7 @@ Tools for Rover Mini ECU development.
 
 ### いつ対応したかは忘れたが，解決済みのもの・無意味となったもの
 
--- #   ECUが停止した後QUITをするとhCloseが二回呼ばれ、例外が発生している。
--- #   キャラクタグラフのベースラインが移動する問題の原因究明。
--- #   parse関数で-- ２バイトデータを無視しているので注意
--- #   ReaderT, StateT モナド導入
+- ECUが停止した後QUITをするとhCloseが二回呼ばれ、例外が発生している。
+- キャラクタグラフのベースラインが移動する問題の原因究明。
+- parse関数で-- ２バイトデータを無視しているので注意
+- ReaderT, StateT モナド導入
