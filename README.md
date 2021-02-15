@@ -12,8 +12,19 @@ This library in developed to produce MEMS monitor using Haskell, the gereat comp
 
 Original idea was studied by an engineer in England.
  
-## 開発課題アイディア
+## Development issue
+### Done
+- ECUが停止した後QUITをするとhCloseが二回呼ばれ、例外が発生している。
+- キャラクタグラフのベースラインが移動する問題の原因究明。
+- parse関数で-- ２バイトデータを無視しているので注意
+- ReaderT, StateT モナド導入
 
+### Doing
+- haddock警告の解消（関数のコメント追記等）
+- Testモジュールで，ダミーデータを発生させて出力する。
+
+### To Do
+- キーオンののち初回接続してしばらくしてエラーが出ると，まったくつながらない
 - 型定義や関数の置き場所を再度整理し，モジュールの独立性を高める
 - ひょっとして TestBits でうまくエラーコードを検出できていない？
 - [こちら](https://minkara.carview.co.jp/userid/2834887/car/2442400/4981106/6/note.aspx#title)参照
@@ -27,29 +38,3 @@ Original idea was studied by an engineer in England.
 -- Bit 5 : ECU Vaccum Sensor Error
 -- Bit 7 : T-Pot cirkit Error
 
-### わかっている問題点
-
-- キーオンののち初回接続してしばらくしてエラーが出ると，まったくつながらない
-- プロファイリングすると盛大なメモリリークあり（ギガ単位のメモリ利用）。Vtyモジュールのせい？
-　※ただし少なくともCatalinaでモニタリングしている限りでは，数十Mバイト程度しかメモリは消費していない。
-
-### 近日対応したい機能
-
-- 既存ログのビューア機能
-- ヘルプキー（ESCキー）を押した時にダイアログ表示
--- ポート値などをGUIを使って入力できるようにする
--- 各種設定値（上下限値，平均値等）を表示
-- グラフ表示項目の選択ダイアログ・初期設定
-- 各センサー値に異常値が出た時に，異常記録を画面・ログ双方に残す
-- アイドリングセンサ値の常時表示　← 異常検知アルゴリズムをどうするか検討
-
-### 保留とする開発予定項目
-
-### 追加したい機能/解決したい問題点/課題
-
-### いつ対応したかは忘れたが，解決済みのもの・無意味となったもの
-
-- ECUが停止した後QUITをするとhCloseが二回呼ばれ、例外が発生している。
-- キャラクタグラフのベースラインが移動する問題の原因究明。
-- parse関数で-- ２バイトデータを無視しているので注意
-- ReaderT, StateT モナド導入
