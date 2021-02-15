@@ -4,23 +4,23 @@ cabal-version:       2.4
 
 name:                mems
 version:             0.1.0.0
--- synopsis:
--- description:
+-- synopsis:            Rover Mini ECU (MEMS) Tool Library
+description:         Tools for Rover Mini ECU development.
 homepage:            https://github.com/kuono/mems
 -- bug-reports:
 license:             MIT
 license-file:        LICENSE
 author:              Kentaro UONO
 maintainer:          info@kuono.net
--- copyright:
+copyright:           2018-2021
 -- category:
 extra-source-files:  CHANGELOG.md, README.md
 
 library
-  exposed-modules:     MyLib
+  exposed-modules:     Mems
   -- other-modules:
   -- other-extensions:
-  build-depends:       base ^>=4.14.1.0
+  build-depends:       brick, bytestring, stm, transformers, time, serialport, directory, random, base ^>=4.14.1.0
   hs-source-dirs:      src
   default-language:    Haskell2010
 
