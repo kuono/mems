@@ -24,7 +24,6 @@ module Mems
             , emptyD7d
             , emptyD80
             , emptyData807d
-            , dummyData807d
             , mneUnknown
             , mname
 ,opnpr,opnac) where
@@ -57,14 +56,15 @@ import System.Hardware.Serialport
       FlowControl(Software),
       SerialPortSettings(commSpeed, timeout, flowControl) ) 
 import System.Directory ( doesFileExist ) 
-import System.Random ( newStdGen, Random(randoms) )
 --
 -- definitions for export
 --
 type Data807d   =
     (BS.ByteString,BS.ByteString)
+-- | The basic mems event type.
 type Event      =
     (LocalTime, EvContents)
+-- | the data mems module send
 data EvContents = PortNotFound FilePath
                 | Connected ModelDataSet
                 | OffLined
@@ -76,6 +76,7 @@ data EvContents = PortNotFound FilePath
 -- | MEMS Commands
 data UCommand = Disconnect | Init | Get807d | ClearFaults | RunFuelPump | StopFuelPump 
               | GetIACPos | IncIACPos | DecIACPos | IncIgAd | DecIgAd | TestActuator deriving (Eq,Show)
+-- | Raw data sent from mems
 type RData    = Data807d
 -- | Ecu model and its identical data
 data ModelDataSet = ModelDataSet { name :: !String, d8size :: !Int, d7size :: !Int} deriving Eq
@@ -121,7 +122,7 @@ run c r = Ex.bracket {- :: IO a	-> (a -> IO b) -> (a -> IO c)	-> IO c	 -}
       Just env -> do {  threadDelay 10000 ; _ <- runReaderT c env ; return () } ) -- start loop
       -- threadDelay inserted on 10th April 2020 for testing wether or not having 
       -- effect to continuous connection for inital usstable term. K.UONO
---
+-- | Main loop of mems control
 loop :: MEMS ()
 loop = do
     env <- ask
@@ -244,7 +245,7 @@ get807d =  do
                   return $ Error "Error in getting 7d data. Empty Response."
               else
                   return $ Tick (r8',r7')
---
+-- | analysed data set from mems
 data Frame = Frame
   { d80size     :: !Int
   , engineSpeed :: !Int   -- 0x01-2	Engine speed in RPM (16 bits)
@@ -298,38 +299,38 @@ type Command  = (Char,String) -- ^ ECU returns echo and one result byte. Command
 opnfp, opnpr, opnac, clspv, opnO2, clsfp, clspr, clsac, opnpv, clsO2, clsf1, clsf2, icrft, dcrft :: Command
 icrft', dcrft', req7d, req80 , incid, decid, incis, decil, incia, decia :: Command
 clrft, htbt, actfi, figcl, reqip, opiac, cliac, rqiac :: Command
-opnfp = (chr 0x01,"Open Fuel Pump relay =stop"):: Command -- Open fuel pump relay (stop fuel pump) 
-opnpr = (chr 0x02,"Open PTC Relay")            :: Command -- Open PTC relay (inlet manifold heater)
-opnac = (chr 0x03,"Open A/C Relay")            :: Command -- Open air conditioning relay 
-clspv = (chr 0x08,"Close purge valve?")        :: Command -- Close purge valve ?
-opnO2 = (chr 0x09,"Open O2 heater relay?")     :: Command -- Open O2 heater relay ?
-clsfp = (chr 0x11,"Close Fuel Pump relay =run"):: Command -- Close fuel pump relay (run fuel pump)
-clspr = (chr 0x12,"Close PTC Relay")           :: Command -- Close PTC Relay (inlet manifold heater)
-clsac = (chr 0x13,"Close A/C Relay")           :: Command -- Close air conditioning relay
-opnpv = (chr 0x18,"Open purge valve?")         :: Command -- Open purge valve ?)
-clsO2 = (chr 0x19,"Close O2 heater relay ?")   :: Command -- Close O2 heater relay ?
-clsf1 = (chr 0x1d,"Close Fan 1 relay?")        :: Command -- Command' -- Close Fan 1 relay ? 
-clsf2 = (chr 0x1e,"Close Fan 2 relay?")        :: Command -- Command' -- Close Fan 2 relay ?
-icrft = (chr 0x79,"Increment Fuel Trim")       :: Command -- Increments fuel trim setting and returns the current value
-dcrft = (chr 0x7a,"Decrement Fuel Trim")       :: Command -- Decrements fuel trim setting and returns the current value
-icrft'= (chr 0x7b,"Increment Fuel Trim-2")     :: Command -- Increments fuel trim setting and returns the current value
-dcrft'= (chr 0x7c,"Decrement Fuel Trim-2")     :: Command -- Decrements fuel trim setting and returns the current value 
-req7d = (chr 0x7d,"Request data frame/7D")     :: Command -- get data for frame7d - followed by 32-byte data frame; 125
-req80 = (chr 0x80,"Request data frame/80")     :: Command -- get data for frame80 - followed by 28-byte data frame; 128
-incid = (chr 0x89,"Increments idle decay")     :: Command -- Increments idle decay setting and returns the current value
-decid = (chr 0x8a,"Decrements idle decay")     :: Command -- Decrements idle decay setting and returns the current value
-incis = (chr 0x91,"Increments idle speed")     :: Command -- Increments idle speed setting and returns the current value
-decil = (chr 0x92,"Decrements idle speed")     :: Command -- Decrements idle speed setting and returns the current value
-incia = (chr 0x93,"Increments ignition ad")    :: Command -- Increments ignition advance offset and returns the current value
-decia = (chr 0x94,"Decrements ignition ad")    :: Command -- Decrements ignition advance offset and returns the current value
-clrft = (chr 0xcc,"Clear fault code")          :: Command -- 204, Clear fault codes	CC 00
-htbt  = (chr 0xf4,"NOP/heartbeat?")            :: Command -- 0xf4 244 NOP / heartbeat? Sent continuously by handheld diagnostic tools to verify serial link.
-actfi = (chr 0xf7,"Actuate fuel incejtor")     :: Command -- F7 03 (SPI?)
-figcl = (chr 0xf8,"Fire ignition coil")        :: Command -- F8 02 
-reqip = (chr 0xfb,"Request IAC position")      :: Command -- FB xx where second byte represents the IAC position
-opiac = (chr 0xfd,"Open IAC one and get pos")  :: Command -- FD xx, where the second byte represents the IAC position
-cliac = (chr 0xfe,"Close IAC one and get pos") :: Command
-rqiac = (chr 0xff,"Request current IAC pos?")  :: Command
+opnfp = (chr 0x01,"Open Fuel Pump relay =stop") :: Command -- Open fuel pump relay (stop fuel pump) 
+opnpr = (chr 0x02,"Open PTC Relay")             :: Command -- Open PTC relay (inlet manifold heater)
+opnac = (chr 0x03,"Open A/C Relay")             :: Command -- Open air conditioning relay 
+clspv = (chr 0x08,"Close purge valve?")         :: Command -- Close purge valve ?
+opnO2 = (chr 0x09,"Open O2 heater relay?")      :: Command -- Open O2 heater relay ?
+clsfp = (chr 0x11,"Close Fuel Pump relay =run") :: Command -- Close fuel pump relay (run fuel pump)
+clspr = (chr 0x12,"Close PTC Relay")            :: Command -- Close PTC Relay (inlet manifold heater)
+clsac = (chr 0x13,"Close A/C Relay")            :: Command -- Close air conditioning relay
+opnpv = (chr 0x18,"Open purge valve?")          :: Command -- Open purge valve ?)
+clsO2 = (chr 0x19,"Close O2 heater relay ?")    :: Command -- Close O2 heater relay ?
+clsf1 = (chr 0x1d,"Close Fan 1 relay?")         :: Command -- Command' -- Close Fan 1 relay ? 
+clsf2 = (chr 0x1e,"Close Fan 2 relay?")         :: Command -- Command' -- Close Fan 2 relay ?
+icrft = (chr 0x79,"Increment Fuel Trim")        :: Command -- Increments fuel trim setting and returns the current value
+dcrft = (chr 0x7a,"Decrement Fuel Trim")        :: Command -- Decrements fuel trim setting and returns the current value
+icrft'= (chr 0x7b,"Increment Fuel Trim-2")      :: Command -- Increments fuel trim setting and returns the current value
+dcrft'= (chr 0x7c,"Decrement Fuel Trim-2")      :: Command -- Decrements fuel trim setting and returns the current value 
+req7d = (chr 0x7d,"Request data frame/7D")      :: Command -- get data for frame7d - followed by 32-byte data frame; 125
+req80 = (chr 0x80,"Request data frame/80")      :: Command -- get data for frame80 - followed by 28-byte data frame; 128
+incid = (chr 0x89,"Increments idle decay")      :: Command -- Increments idle decay setting and returns the current value
+decid = (chr 0x8a,"Decrements idle decay")      :: Command -- Decrements idle decay setting and returns the current value
+incis = (chr 0x91,"Increments idle speed")      :: Command -- Increments idle speed setting and returns the current value
+decil = (chr 0x92,"Decrements idle speed")      :: Command -- Decrements idle speed setting and returns the current value
+incia = (chr 0x93,"Increments ignition ad")     :: Command -- Increments ignition advance offset and returns the current value
+decia = (chr 0x94,"Decrements ignition ad")     :: Command -- Decrements ignition advance offset and returns the current value
+clrft = (chr 0xcc,"Clear fault code")           :: Command -- 204, Clear fault codes	CC 00
+htbt  = (chr 0xf4,"NOP/heartbeat?")             :: Command -- 0xf4 244 NOP / heartbeat? Sent continuously by handheld diagnostic tools to verify serial link.
+actfi = (chr 0xf7,"Actuate fuel incejtor")      :: Command -- F7 03 (SPI?)
+figcl = (chr 0xf8,"Fire ignition coil")         :: Command -- F8 02 
+reqip = (chr 0xfb,"Request IAC position")       :: Command -- FB xx where second byte represents the IAC position
+opiac = (chr 0xfd,"Open IAC one and get pos")   :: Command -- FD xx, where the second byte represents the IAC position
+cliac = (chr 0xfe,"Close IAC one and get pos")  :: Command
+rqiac = (chr 0xff,"Request current IAC pos?")   :: Command
 --
 -- Actuator Command
 -- 
@@ -488,34 +489,9 @@ currentTime :: IO LocalTime
 currentTime = do
   zone <- getCurrentTimeZone
   utcToLocalTime zone <$> getCurrentTime
--- | dummy frame data
-dummyData807d :: IO Data807d
-dummyData807d = do
-  g <- newStdGen
-  let r = randoms g :: [Char]
-      r1 = Prelude.take 27 r 
-      r2 = Prelude.take 31 $ Prelude.drop 28 r 
-  return (BS.pack (chr 28:r1),BS.pack (chr 32:r2))-- random807d :: IO ECU.Data807d
---
--- dummyFrameData :: IO Frame
--- dummyFrameData = parse <$> dummyData807d
 --
 -- constants
 --
--- emptyFrame :: Frame
--- emptyFrame = Frame 
---   { d80size     = 28, d7dsize = 32, engineSpeed = 0 , coolantTemp = 0 , ambientTemp = 0 , intakeATemp = 0
---   , fuelTemp    = 0 , mapSensor   = 0 , battVoltage = 0.0 , ibattVoltage = 0
---   , throttlePot = 0.0 , ithrottlePot = 0 , idleSwitch  = False , idleByte = 0
---   , unknown0B   = 0 , pnClosed    = 0
---   , faultCode1  = False , faultCode2  = False , faultCodeX4 = False , faultCodeX5 = False
---   , faultCode10 = False , faultCodeY5 = False , faultCode16 = False
---   , faultCode0D = 0 , faultCode0E = 0
---   , unknown0F   = 0 , unknown10   = 0
---   , unknown11   = 0 , idleACMP    = 0 , idleSpdDev  = 0 , unknown15   = 0 , ignitionAd  = 0.0
---   , coilTime    = 0.0 , unknown19   = 0 , unknown1A   = 0 , unknown1B   = 0
---   , lambda_voltage = 0 , closed_loop'   = 0 , fuel_trim'     = 0
---   }
 -- mdata      = show . BS.unpack . mdb -- mapM (printf " %02X") . BS.unpack . mdb 
 models :: [(BS.ByteString, ModelDataSet)]
 models = [ mneUnknown, mneAuto, mne10078, mne101070, mne101170 ] -- 28 = 0x1c = \FS, 14 = 0x0. = \SO
@@ -597,16 +573,16 @@ sendCommandAndGet1Byte :: SerialPort -> Char -> MEMS (Either String BS.ByteStrin
 sendCommandAndGet1Byte p c = do
   s <- lift $ send p $ BS.singleton c
   if s == 0 then
-    return $ Left $ "The command ( " ++ show c ++ " ) was not sent." -- BS.empty
-  else
-    do
-      r <- liftIO $ tryIO 5 $ recv p 1 -- get echo 
-      -- liftIO $ flush p
-      case r of
-        Left  m  -> return $ Left $ m ++ " while waiting for echo byte ( " ++ show c ++ ")."
-        Right r' -> if r' == BS.empty 
-          then return $ Left $ "No Response 1 byte for " ++ show c -- BS.empty -- fail $ "ECU did not responsed while command ( " ++ show c ++ " ) was sent."
-          else liftIO $ tryIO 5 $ recv p 1
+    return $ Left $ "The command ( " ++ show c ++ " ) was not sent."
+    else
+      do
+        r <- liftIO $ tryIO 5 $ recv p 1 -- get echo 
+        -- liftIO $ flush p
+        case r of
+          Left  m  -> return $ Left $ m ++ " while waiting for echo byte ( " ++ show c ++ ")."
+          Right r' -> if r' == BS.empty 
+            then return $ Left $ "No Response 1 byte for " ++ show c -- BS.empty -- fail $ "ECU did not responsed while command ( " ++ show c ++ " ) was sent."
+            else liftIO $ tryIO 5 $ recv p 1
 -- | an action to try (IO BS.ByteString) Int times and returns BS.empty when some error occured. 
 tryIO ::    Int              -- ^ number of times to try to do the action 
          -> IO BS.ByteString -- ^ the action which returns BS.empty when error occured
@@ -616,10 +592,10 @@ tryIO n a -- try n times action
   | otherwise = do
       r <- a 
       if r == BS.empty then do
-        threadDelay 1000
-        tryIO (n-1) a 
-      else
-        return $ Right r
+          threadDelay 1000
+          tryIO (n-1) a 
+        else
+          return $ Right r
 --
 tryRecvNBytes :: SerialPort -> BS.ByteString -> Int -> IO BS.ByteString
 tryRecvNBytes ecuport !acc n =  
