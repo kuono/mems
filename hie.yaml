@@ -1,0 +1,7 @@
+cradle:
+  cabal:
+    - path: "src"
+      component: "lib:mems"
+
+    - path: "test"
+      component: "mems:test:mems-test"

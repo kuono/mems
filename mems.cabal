@@ -31,3 +31,4 @@ test-suite mems-test
   hs-source-dirs:      test
   main-is:             MyLibTest.hs
   build-depends:       base ^>=4.14.1.0
+  ghc-options:         -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wmissing-import-lists -Wcompat

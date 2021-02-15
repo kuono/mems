@@ -32,19 +32,32 @@ import qualified Brick.BChan as BC
 import qualified Data.ByteString.Char8 as BS
 import qualified Control.Exception as Ex
 import Control.Concurrent
+    ( threadDelay, forkIO, killThread, ThreadId )
 import Control.Concurrent.STM.TChan
-import Control.Monad
-import Control.Monad.IO.Class
-import Control.Monad.STM
-import Control.Monad.Trans.Class
-import Control.Monad.Trans.Reader
-import Data.Bits
-import Data.Char
+    ( readTChan, tryReadTChan, writeTChan, TChan )
+import Control.Monad ( forever )
+import Control.Monad.IO.Class ( MonadIO(liftIO) )
+import Control.Monad.STM ( atomically )
+import Control.Monad.Trans.Class ( MonadTrans(lift) )
+import Control.Monad.Trans.Reader ( ask, ReaderT(runReaderT) )
+import Data.Bits ( Bits(testBit) )
+import Data.Char ( ord, chr )
 import Data.Time.LocalTime
-import Data.Time.Clock
-import System.Hardware.Serialport 
-import System.Directory 
-import System.Random
+    ( utcToLocalTime, getCurrentTimeZone, LocalTime )
+import Data.Time.Clock ( getCurrentTime )
+import System.Hardware.Serialport
+    ( closeSerial,
+      flush,
+      openSerial,
+      recv,
+      send,
+      defaultSerialSettings,
+      SerialPort,
+      CommSpeed(CS9600),
+      FlowControl(Software),
+      SerialPortSettings(commSpeed, timeout, flowControl) ) 
+import System.Directory ( doesFileExist ) 
+import System.Random ( newStdGen, Random(randoms) )
 --
 -- definitions for export
 --
@@ -105,7 +118,7 @@ run c r = Ex.bracket {- :: IO a	-> (a -> IO b) -> (a -> IO c)	-> IO c	 -}
   -- for using resources
   (\case      -- Maybe Env
       Nothing  -> return () -- fail "ECU Initialization failed."
-      Just env -> do {  threadDelay 10000 ; runReaderT c env ; return () } ) -- start loop
+      Just env -> do {  threadDelay 10000 ; _ <- runReaderT c env ; return () } ) -- start loop
       -- threadDelay inserted on 10th April 2020 for testing wether or not having 
       -- effect to continuous connection for inital usstable term. K.UONO
 --
@@ -134,8 +147,8 @@ loop = do
             (_, OffLined )       -> do { lift clearchan ; return () }
             (_, Error _ )        -> do { lift clearchan ; return () }
             _                    -> loop
-                -- つまり Init | Get807d | ClearFaults | RunFuelPump | StopFuelPump 
-                -- | GetIACPos | IncIACPos | DecIACPos | IncIgAd | DecIgAd | TestActuator
+                -- つまり Init | Get807d | ClearFaults | RunFuelPump | StopFuelPump |
+                --  GetIACPos | IncIACPos | DecIACPos | IncIgAd | DecIgAd | TestActuator
                 -- のいずれかだった場合，        
 --
 report :: EvContents -> MEMS ()
@@ -179,22 +192,22 @@ init (f,dc,cc,lc)= do
         else do
             sp   <- openSerial f defaultSerialSettings { commSpeed = CS9600, timeout= 1, flowControl = Software }
             --
-            r1   <- send sp $ BS.singleton (chr 0xca)  -- 202 'ha no hankaku' 
-            r1'  <- tryRecv1Byte sp 5
+            _   <- send sp $ BS.singleton (chr 0xca)  -- 202 'ha no hankaku' 
+            _   <- tryRecv1Byte sp 5
             -- putStrLn $ "r1 = " ++ show r1 ++ ":" ++ show r1'
-            r2   <- send sp $ BS.singleton (chr 0x75)  -- 117 'u' 
-            r2'  <- tryRecv1Byte sp 5
+            _   <- send sp $ BS.singleton (chr 0x75)  -- 117 'u' 
+            _   <- tryRecv1Byte sp 5
             -- putStrLn $ "r2 = " ++ show r2 ++ show r2'
-            r3   <- send sp $ BS.singleton $ fst htbt  -- 244 f4 -> f4 00
-            r3'  <- tryRecv1Byte sp 5
-            r3'' <- tryRecv1Byte sp 5
-            r4   <- send sp $ BS.singleton (chr 0xd0)  -- 208 'mi no hankaku'
-            r4'  <- tryRecv1Byte sp 5
-            m <- tryRecvNBytes sp BS.empty 4 -- ^ モデルデータの読みとり
+            _   <- send sp $ BS.singleton $ fst htbt  -- 244 f4 -> f4 00
+            _   <- tryRecv1Byte sp 5
+            _   <- tryRecv1Byte sp 5
+            _   <- send sp $ BS.singleton (chr 0xd0)  -- 208 'mi no hankaku'
+            _   <- tryRecv1Byte sp 5
+            m <- tryRecvNBytes sp BS.empty 4 -- モデルデータの読みとり
             if m == BS.empty || BS.length m /= 4
                 then return Nothing
                 else do
-                    tt <- forkIO $ forever $ do -- | 定期的にデータ送付を命令するループスレッドを立ち上げる
+                    tt <- forkIO $ forever $ do -- 定期的にデータ送付を命令するループスレッドを立ち上げる
                         atomically $ writeTChan cc Get807d
                         threadDelay 400000 {- firing get807d frequency : every 0.4 sec -}
                     let m' = lookup m models  -- モデルデータを調べる
@@ -281,7 +294,7 @@ data Frame = Frame
 --
 -- | ECU Commands
 type Command  = (Char,String) -- ^ ECU returns echo and one result byte. Command byte (send to ECU), Num of Response following bytes from ECU
-type Command' = (Char,String) -- ^ ECU returns only echo byte.
+-- type Command' = (Char,String) -- ^ ECU returns only echo byte.
 opnfp, opnpr, opnac, clspv, opnO2, clsfp, clspr, clsac, opnpv, clsO2, clsf1, clsf2, icrft, dcrft :: Command
 icrft', dcrft', req7d, req80 , incid, decid, incis, decil, incia, decia :: Command
 clrft, htbt, actfi, figcl, reqip, opiac, cliac, rqiac :: Command
@@ -295,8 +308,8 @@ clspr = (chr 0x12,"Close PTC Relay")           :: Command -- Close PTC Relay (in
 clsac = (chr 0x13,"Close A/C Relay")           :: Command -- Close air conditioning relay
 opnpv = (chr 0x18,"Open purge valve?")         :: Command -- Open purge valve ?)
 clsO2 = (chr 0x19,"Close O2 heater relay ?")   :: Command -- Close O2 heater relay ?
-clsf1 = (chr 0x1d,"Close Fan 1 relay?")        :: Command' -- Close Fan 1 relay ? 
-clsf2 = (chr 0x1e,"Close Fan 2 relay?")        :: Command' -- Close Fan 2 relay ?
+clsf1 = (chr 0x1d,"Close Fan 1 relay?")        :: Command -- Command' -- Close Fan 1 relay ? 
+clsf2 = (chr 0x1e,"Close Fan 2 relay?")        :: Command -- Command' -- Close Fan 2 relay ?
 icrft = (chr 0x79,"Increment Fuel Trim")       :: Command -- Increments fuel trim setting and returns the current value
 dcrft = (chr 0x7a,"Decrement Fuel Trim")       :: Command -- Decrements fuel trim setting and returns the current value
 icrft'= (chr 0x7b,"Increment Fuel Trim-2")     :: Command -- Increments fuel trim setting and returns the current value
