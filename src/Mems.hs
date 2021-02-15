@@ -102,7 +102,7 @@ run c r = Ex.bracket {- :: IO a	-> (a -> IO b) -> (a -> IO c)	-> IO c	 -}
           BC.writeBChan (dch e') (t,e)
           killThread $ tickt e'
       )
-  -- | for using resources
+  -- for using resources
   (\case      -- Maybe Env
       Nothing  -> return () -- fail "ECU Initialization failed."
       Just env -> do {  threadDelay 10000 ; runReaderT c env ; return () } ) -- start loop
