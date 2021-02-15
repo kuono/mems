@@ -1,12 +1,22 @@
 module MyLibTest (main, dummyData807d) where
 
-import Mems
+import Mems ( MEMS, RData, run )
 import System.Random ( newStdGen, Random(randoms) )
 import qualified Data.ByteString.Char8 as BS
 import Data.Char ( ord, chr )
 
 main :: IO ()
-main = putStrLn "Test suite not yet implemented."
+main = do
+  putStrLn "Welcome to Test suite. Unfortunatelly, it is not yet implemented."
+  putStr   "What is the device file name ( like '/dev/tty/tty01'  or 't' as a test) : "
+  n <- getLine
+  case n of
+    "t" -> undefined
+    _   -> run testMain n
+  
+-- | test loop function
+testMain:: FilePath -> MEMS ()
+testMain = undefined
 
 dummyData807d :: IO RData
 dummyData807d = do

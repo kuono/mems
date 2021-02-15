@@ -21,16 +21,16 @@ common shared-properties
   ghc-options:         -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wmissing-import-lists -Wcompat
 
 library
+  import:              shared-properties
   exposed-modules:     Mems
   -- other-modules:
   -- other-extensions:
-  import:              shared-properties
   build-depends:       brick, bytestring, stm, transformers, time, serialport, directory, random, base ^>=4.14.1.0
   hs-source-dirs:      src
 
 test-suite mems-test
+  import:              shared-properties
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             MyLibTest.hs
-  import:              shared-properties
   build-depends:       random, bytestring, base ^>=4.14.1.0

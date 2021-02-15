@@ -10,8 +10,9 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE BangPatterns #-}
 module Mems 
-            ( Event  --    = (BS.ByteString,BS.ByteString)
-            , RData  --    = Data807d
+            ( MEMS 
+            , Event
+            , RData
             , Frame(..)
             , EvContents(..) -- =  PortNotFound FilePath | Connected ModelDataSet | ...
             , UCommand (..)
@@ -97,7 +98,8 @@ data Env  = Env
     , lch   :: TChan Event
     , tickt :: ThreadId
     }
-type MEMS = ReaderT Env IO
+-- | MEMS is a basic type for proceccing mems functions
+type MEMS  = ReaderT Env IO 
 --
 -- | main function
 --
