@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 module MyLibTest (main) where
 
-import Mems ( MEMS, run, EvContents )
+import Mems ( EvContents ( Tick ))
 import System.Random ( newStdGen, Random(randoms) )
 import qualified Data.ByteString.Char8 as BS
 import Data.Char ( chr )
@@ -10,24 +10,27 @@ main :: IO ()
 main = do
           putStrLn "Welcome to Test suite. Unfortunatelly, it is not yet implemented."
           putStr   "What is the device path ( like '/dev/tty/tty01'  or just nothing as a test) : "
-          p <- getLine
-          let source = case n of
-                        "" -> show dummyData
-                        _  -> run $ testMain p
-          mainLoop source
-            where
-              mainLoop s = do
-                d <- source
-                j <- currentTime
-                case d of
-                  Nothing  -> return ()
-                  Just str -> do
-                    putStrLn str 
-                    mainLoop
+          -- p <- getLine
+          putStrLn " "
+          Tick (r1,r2) <- dummyData
+          putStrLn $ "The data :" ++ show r1 ++ show r2
+          -- let source = case n of
+          --               "" -> show dummyData
+          --               _  -> run $ testMain p
+          -- mainLoop source
+          --   where
+          --     mainLoop s = do
+          --       d <- source
+          --       j <- currentTime
+          --       case d of
+          --         Nothing  -> return ()
+          --         Just str -> do
+          --           putStrLn str 
+          --           mainLoop
 
 -- | test loop function
-testMain:: FilePath -> MEMS ()
-testMain = undefined
+-- testMain:: FilePath -> MEMS ()
+-- testMain = undefined
 
 dummyData :: IO EvContents
 dummyData = do
@@ -35,7 +38,7 @@ dummyData = do
   let r = randoms g :: [Char]
       r1 = Prelude.take 27 r 
       r2 = Prelude.take 31 $ Prelude.drop 28 r 
-  return Tick (BS.pack (chr 28:r1),BS.pack (chr 32:r2))
+  return $ Tick (BS.pack (chr 28:r1),BS.pack (chr 32:r2))
   
   
 -- emptyFrame :: Frame
