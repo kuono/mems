@@ -33,4 +33,4 @@ test-suite mems-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             MyLibTest.hs
-  build-depends:       random, bytestring, base ^>=4.14.1.0
+  build-depends:       mems, random, bytestring, base ^>=4.14.1.0

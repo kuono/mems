@@ -1,31 +1,43 @@
-module MyLibTest (main, dummyData807d) where
+{-# LANGUAGE BlockArguments #-}
+module MyLibTest (main) where
 
-import Mems ( MEMS, RData, run )
+import Mems ( MEMS, run, EvContents )
 import System.Random ( newStdGen, Random(randoms) )
 import qualified Data.ByteString.Char8 as BS
-import Data.Char ( ord, chr )
+import Data.Char ( chr )
 
 main :: IO ()
 main = do
-  putStrLn "Welcome to Test suite. Unfortunatelly, it is not yet implemented."
-  putStr   "What is the device file name ( like '/dev/tty/tty01'  or 't' as a test) : "
-  n <- getLine
-  case n of
-    "t" -> undefined
-    _   -> run testMain n
-  
+          putStrLn "Welcome to Test suite. Unfortunatelly, it is not yet implemented."
+          putStr   "What is the device path ( like '/dev/tty/tty01'  or just nothing as a test) : "
+          p <- getLine
+          let source = case n of
+                        "" -> show dummyData
+                        _  -> run $ testMain p
+          mainLoop source
+            where
+              mainLoop s = do
+                d <- source
+                j <- currentTime
+                case d of
+                  Nothing  -> return ()
+                  Just str -> do
+                    putStrLn str 
+                    mainLoop
+
 -- | test loop function
 testMain:: FilePath -> MEMS ()
 testMain = undefined
 
-dummyData807d :: IO RData
-dummyData807d = do
+dummyData :: IO EvContents
+dummyData = do
   g <- newStdGen
   let r = randoms g :: [Char]
       r1 = Prelude.take 27 r 
       r2 = Prelude.take 31 $ Prelude.drop 28 r 
-  return (BS.pack (chr 28:r1),BS.pack (chr 32:r2))-- random807d :: IO ECU.Data807d
-
+  return Tick (BS.pack (chr 28:r1),BS.pack (chr 32:r2))
+  
+  
 -- emptyFrame :: Frame
 -- emptyFrame = Frame 
 --   { d80size     = 28, d7dsize = 32, engineSpeed = 0 , coolantTemp = 0 , ambientTemp = 0 , intakeATemp = 0
