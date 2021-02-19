@@ -27,7 +27,10 @@ module Mems
             , emptyData807d
             , mneUnknown
             , mname
-,opnpr,opnac) where
+            , opnpr
+            , opnac
+            , someFunc
+            ) where
 import qualified Brick.BChan as BC
 import qualified Data.ByteString.Char8 as BS
 import qualified Control.Exception as Ex
@@ -102,7 +105,10 @@ data Env  = Env
 type MEMS  = ReaderT Env IO 
 --
 -- | main function
+someFunc :: IO ()
+someFunc = putStrLn "someFunc!"
 --
+-- | wake up ecu
 run ::  MEMS a -> (FilePath,BC.BChan Event,TChan UCommand,TChan Event) -> IO ()
 run c r = Ex.bracket {- :: IO a	-> (a -> IO b) -> (a -> IO c)	-> IO c	 -}
   -- for resource acquisition ( opening )

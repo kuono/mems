@@ -3,5 +3,8 @@ cradle:
     - path: "src"
       component: "lib:mems"
 
+    - path: "app/Main.hs"
+      component: "mems:exe:mems"
+
     - path: "test"
       component: "mems:test:mems-test"

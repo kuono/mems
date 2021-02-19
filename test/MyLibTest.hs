@@ -1,3 +1,12 @@
+{- |
+* Module      : MyLibTest
+* Description : MEMS ( Rover Mini Ecu ) Communication Test Library
+* Copyright   : (c) Kentaro UONO, 2021
+* License     : MIT Licence
+* Maintainer  : info@kuono.net
+* Stability   : experimental
+* Portability : macOS X
+-}
 {-# LANGUAGE BlockArguments #-}
 module MyLibTest (main) where
 
@@ -14,6 +23,7 @@ main = do
           putStrLn " "
           Tick (r1,r2) <- dummyData
           putStrLn $ "The data :" ++ show r1 ++ show r2
+          return ()
           -- let source = case n of
           --               "" -> show dummyData
           --               _  -> run $ testMain p
