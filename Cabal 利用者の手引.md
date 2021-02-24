@@ -1,0 +1,942 @@
+# [Cabal 3.4 Users Guide](https://cabal.readthedocs.io/en/3.4/) 仮訳
+
+## 1. Haskell と Cabal を使い始める
+
+### 1.1. Haskell のツール群を<ruby><rb>設置</rb><rt>インストール</rt></ruby>する
+`Haskell`のツール群を<ruby><rb>設置</rb><rt>インストール</rt></ruby>するためには，Linux や Mac を使っているなら[ghcup](https://www.haskell.org/ghcup/)を使って導入すればよい。Windows であれば，[こちらの導入手引](https://hub.zhox.com/posts/introducing-haskell-dev/)を参照のこと。
+
+### 1.2. 新しいアプリケーションを作成する
+Haskell のパッケージのディレクトリ構造や外部の依存モジュールをどのように加えるかを学ぶために，まず簡単な Haskell のアプリケーションを一から作ってみよう。
+
+#### 1.2.1. アプリケーションの初期化
+プロジェクトファイルを保管する`myfirstapp`ディレクトリをつくることから始めよう。以下の方法は，Unix のシェルでも動くし，Windows の PowerShell でも動く。
+```shell
+$ mkdir myfirstapp
+$ cd myfirstapp
+```
+からのディレクトリが作成できたら，パッケージを初期化しよう。
+```shell
+$ cabal init --cabal-version=2.4 --license=NONE -p myfirstapp
+```
+これにより，以下のファイルが作成される。
+```shell
+$ ls
+CHANGELOG.md
+Main.hs
+myfirstapp.cabal
+Setup.hs
+```
+`Main.hs`は，パッケージのコードを格納するファイルである。初期設定では，`cabal init` は初期設定ではパッケージ名と同じ名前，この例では`myfirstapp`を使って実行可能ファイルを作成する。`cabal init`でライブラリだけを作成するなら`--lib`を，ライブラリと実行ファイルを作成するなら`--libandexe`をつける。他の<ruby><rb>選択肢</rb><rt>オプション</rt></ruby>については`cabal init --help`を参照されたい。
+
+`myfirstapp.cabal`は，Cabal のメタデータファイルであり，作成しようとしているパッケージや，そのパッケージを作成する際に依存しているパッケージについての説明が記述されている。
+myfirstapp.cabal is Cabal’s metadata file which describes your package and its dependencies. We’ll be updating this file in a little bit when we add an external dependency to our package.
+
+### 1.2.2. Running the application
+As mentioned above, cabal init with no arguments generates a package with a single executable that prints "Hello, Haskell!" to the terminal. To run the executable enter the following command:
+
+```shell
+cabal run :myfirstapp
+```
+You should see the following output in the terminal:
+```shell
+$ cabal run :myfirstapp
+...
+Hello, Haskell!
+Note
+```
+The : prefix in :myfirstapp signifies that the myfirstapp target is part of the current package.
+
+Notice that we didn’t need to run a build command before cabal run, this is because cabal run first determines if the code needs to be re-built before running the executable. If you just want to build a target you can do so with cabal build:
+
+```shell
+cabal build :myfirstapp
+```
+### 1.2.3. Adding dependencies
+Next we’ll add an external dependency to our application. Hackage is the Haskell community’s central package archive of open source software.
+
+In our application, we’ll use a package called haskell-say to print text to the terminal with some embellishment.
+
+> Tip
+> If you installed cabal a while ago but haven’t used it recently you may need to update the package index, you can do this by running cabal update.
+
+In our myfirstapp.cabal file we’ll update the build-depends attribute of the executable myfirstapp section to include haskell-say:
+```yaml
+executable myfirstapp
+    main-is: Main.hs
+    build-depends:
+        base >=4.11 && <4.12,
+        haskell-say ^>=1.0.0.0
+```
+> Note
+> `^>=1.0.0.0` means use version 1.0.0.0 of the library or any more recent minor release with the same major version.
+
+Next we’ll update Main.hs to use the HaskellSay library:
+
+```Haskell
+module Main where
+
+import HaskellSay (haskellSay)
+
+main :: IO ()
+main =
+  haskellSay "Hello, Haskell! You're using a function from another package!"
+```
+import HaskellSay (haskellSay) brings the haskellSay function from the module named HaskellSay into scope. The HaskellSay module is defined in the haskell-say packages that we added a dependency on above.
+
+Now you can build and re-run your code to see the new output:
+
+```
+$ cabal run
+    ________________________________________________________
+   /                                                        \
+  | Hello, Haskell! You're using a function from another     |
+  | package!                                                 |
+   \____       _____________________________________________/
+        \    /
+         \  /
+          \/
+    _____   _____
+    \    \  \    \
+     \    \  \    \
+      \    \  \    \
+       \    \  \    \  \-----------|
+        \    \  \    \  \          |
+         \    \  \    \  \---------|
+         /    /  /     \
+        /    /  /       \  \-------|
+       /    /  /    ^    \  \      |
+      /    /  /    / \    \  \ ----|
+     /    /  /    /   \    \
+    /____/  /____/     \____\
+```
+### 1.3. What Next?
+Now that you know how to set up a simple Haskell package using Cabal, check out some of the resources on the Haskell website’s documentation page or read more about packages and Cabal on the introduction page.
+
+---
+Cabal は，[Haskell](http://www.haskell.org/) の標準パッケージシステムである。Cabal によって，Haskell のソフトウェアを設定したり，<ruby><rb>構築</rb><rt>ビルド</rt></ruby>したり，<ruby><rb>設置</rb><rt>インストール</rt></ruby>することができ，その上，他のユーザーや開発者に配布することもできる。
+
+`cabal`は，Cabal パッケージという仕組みの上で動作するコマンドラインツールである。cabal によって，すでに存在しているパッケージの<ruby><rb>設置</rb><rt>インストール</rt></ruby>ができる他，独自のパッケージの開発も行うことができる。<ruby><rb>手元</rb><rt>ローカル</rt></ruby>にあるパッケージを使うこともできるし，<ruby><rb>遠隔地</rb><rt>リモート</rt></ruby>のパッケージ<ruby><rb>庫</rb><rt>アーカイブ</rt></ruby>からもってきたパッケージを，依存するパッケージをも含めて自動的に<ruby><rb>設置</rb><rt>インストール</rt></ruby>することもできる。初期設定では，[Hackage](http://hackage.haskell.org/) という，数千のライブラリやアプリケーションを Cabal パッケージ<ruby><rb>形式</rb><rt>フォーマット</rt></ruby>で掲載している Haskell の標準パッケージ<ruby><rb>庫</rb><rt>アーカイブ</rt></ruby>を使うように設定されている。
+
+## 2. はじめに
+Cabal は，Haskell ソフトウエアのパッケージシステムである。パッケージシステムのポイントは，ソフトウェアの開発者やユーザーが簡単にソフトウェアを配布したり使用したり再利用したりすることができるようにする点である。パッケージシステムは，ユーザーの手にソフトウェアを届けるのを簡単にする。これに負けず劣らず重要なのは，ソフトウェア開発者にとっては，他の開発者が作成したソフトウェア部品を再利用できるようになることである。
+
+パッケージシステムは，パッケージを扱う。Cabal が扱うパッケージは，**Cabal パッケージ**である。Cabal パッケージ は，配布の単位となる。すべての Cabal パッケージは，パッケージ名とバージョン番号を与えられており，パッケージの識別のもとになる（例：`filepath-1.0`)。
+
+Cabal パッケージは，他の Cabal パッケージに依存することができる。パッケージ管理を自動で行うためのツールもある。これの意味するところは，開発者やユーザーは，パッケージををインストールする際，依存するパッケージも含めて自動的にインストールできるということである。また，多くの開発者によって書かれたコードを再利用したたくさんのパッケージを使って，きわめて独立性の高いシステムを実用的に作成することができるという意味でもある。
+
+Cabal パッケージは，ソースコード形式が基本であり，典型的には（必須ではないが），多くのプラットフォームや Haskell の実行環境に移植可能である。
+Cabal パッケージの<ruby><rb>形式</rb><rt>フォーマット</rt></ruby>は，他の形式，例えば様々なシステムのバイナリパッケージに変換できるよう設計されている。
+
+配布の際，Cabal パッケージは標準圧縮 tarball <ruby><rb>形式</rb><rt>フォーマット</rt></ruby>を用い，拡張子は.tar.gzとなる。（例：`filepath-1.0.tar.gz`）
+
+パッケージは，Haskell言語の一部ではなく，CabalとGHC（あるいはいくつかのHaskellの他のコンパイラ）の組み合わせで機能が実現されている。
+
+### 2.1 パッケージを扱う道具
+cabal という名前のコマンドラインツールは，ユーザーや開発者が Cabal パッケージをビルドしたり<ruby><rb>設置</rb><rt>インストール</rt></ruby>したりできるようにする。このツールは，ローカルなパッケージにも使えるし，ネットワーク越しにリモートでアクセスするパッケージも扱うことができる。自動的に Cabal パッケージや，そのパッケージが依存している他の Cabal パッケージををインストールすることができる。
+
+開発者は，このツールをローカルディレクトリに入れるパッケージで使うことができる。例えば，
+
+```shell
+$ cd foo/
+$ cabal install
+```
+ローカルなディレクトリにあるパッケージを扱う際は，開発者はそれぞれ単独で<ruby><rb>構成</rb><rt>コンフィギュア</rt></ruby>や<ruby><rb>構築</rb><rt>ビルド</rt></ruby>を行うこともできるし，<ruby><rb>説明文書</rb><rt>ドキュメント</rt></ruby>を生成したり，テストを走らせたり，ベンチマークをとったりすることもできる。
+
+一度にいくつかのパッケージを<ruby><rb>手元</rb><rt>ローカル</rt>に<ruby><rb>設置</rb><rt>インストール</rt></ruby>することもできる。例えば，
+
+```shell
+$ cabal install foo/ bar/
+```
+開発者やユーザは，cabal を使って，<ruby><rb>遠隔地</rb><rt>リモート</rt></ruby>にある Cabal パッケージ<ruby><rb>庫</rb><rt>アーカイブ</rt></ruby>から<ruby><rb>手元</rb><rt>ローカル</rt></ruby>にパッケージを<ruby><rb>設置</rb><rt>インストール</rt></ruby>することもできる。`cabal`は，何もしなければ [Hackage](http://hackage.haskell.org/) という名前の，Haskell パッケージ<ruby><rb>庫</rb><rt>アーカイブ</rt></ruby>を利用するように設定されているが，対応している他の<ruby><rb>庫</rb><rt>アーカイブ</rt></ruby>を利用することも可能である。
+
+```shell
+$ cabal install xmonad
+```
+これは，`xmonad`パッケージと，すべての依存パッケージを設置するコマンドである。
+
+庫に格納されたパッケージに加えて，開発者はローカルまたは<ruby><rb>遠隔地</rb><rt>リモート</rt></ruby>にある tarball ファイルからもパッケージを設置することができる。例えば，
+
+```shell
+$ cabal install foo-1.0.tar.gz
+$ cabal install http://example.com/foo-1.0.tar.gz
+```
+Cabal は，パッケージをどこにどのように<ruby><rb>設置</rb><rt>インストール</rt></ruby>するかについて多様な方法を提供する。<ruby><rb>設置</rb><rt>インストール</rt></ruby>する場所をどこにするか，使用する Haskell の<ruby><rb>実装</rb><rt>インプリメンテーション</rt></ruby>をどれにするのか，できるだけ最適化するのか，それともプロファイルを取るための情報を埋め込むのかなどを選択することができる。ユーザーは，通常，`.cabal`ファイルを編集する必要はない。
+
+詳細については，パッケージの<ruby><rb>構築</rb><rt>ビルド</rt></ruby>および<ruby><rb>設置</rb><rt>インストール</rt></ruby>の章を参照されたい。
+
+Cabal は，Cabalパッケージを扱うための唯一のツールというわけではない。`.cabal`ファイルは標準的な形式とライブラリを利用しているので，特定の目的のための特別ツールがいくつか存在する。
+
+### 2.2. パッケージの中身
+
+Cabal パッケージは以下の要素から成る：
+
+- ライブラリや実行可能ファイル，パッケージのテスト用メタデータなどが入った，人間にも機械にも可読な形式（`.cabal`ファイル）から成る Haskell のソフトウエア
+- パッケージを<ruby><rb>構築</rb><rt>ビルド</rt></ruby>するための標準インタフェース（`"Setup.hs"`ファイル)
+
+`.cabal`ファイルは，作者が作成したパッケージに関する情報を含んでいる。典型的には，パッケージが依存している他の Cabal パッケージの一覧が含まれている。
+
+`.cabal`ファイルや`"Setup.hs"`ファイルが保持している情報の詳細についてや，<ruby><rb>構築</rb><rt>ビルド</rt></ruby>システムが提供する他の機能については，[パッケージの開発](#developingPackages)章を参照のこと。
+
+### 2.3. Cabal の機能
+
+Cabal および関係ツールや関係ウェブサイトは，以下の機能を提供する：
+
+- ソフトウェアの<ruby><rb>構築</rb><rt>ビルド</rt></ruby>システム
+- ソフトウェアの<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>指定
+- 配布のためのパッケージ生成
+- 自動パッケージ管理
+  - `cabal`コマンドラインツールを直接使うことで実現
+  - RPM や deb のような，ネイティブパッケージに変換することで実現
+- Web および<ruby><rb>手元</rb><rt>ローカル</rt></ruby>の Cabal パッケージ<ruby><rb>庫</rb><rt>アーカイブ</rt></ruby>
+  - 1,000以上の Cabal パッケージを格納した中央 Hackage サイト
+
+このシステムの一部は，他の要素がなくとも動作する。典型的には，簡素なパッケージを<ruby><rb>構築</rb><rt>ビルド</rt></ruby>するために最初から組み込まれている<ruby><rb>構築</rb><rt>ビルド</rt></ruby>システムはオプションである：カスタム<ruby><rb>構築</rb><rt>ビルド</rt></ruby>システムを使用することも可能である。Some parts of the system can be used without others. In particular the built-in build system for simple packages is optional: it is possible to use custom build systems.
+
+### 2.4. 類似のシステム
+
+Cabal システムは，大雑把に言えば，Python の Eggs や，Ruby の Gem，Perl ディストリビューションに該当する。それぞれのシステムは，配布可能なパッケージの概念があり，パッケージの配布過程を管理したり，<ruby><rb>設置</rb><rt>インストール</rt></ruby>を管理するためのツールを持つ。
+
+Hackageは，Cabal パッケージのオンライン<ruby><rb>庫</rb><rt>アーカイブ</rt></ruby>である。これは，大雑把に言えば，CPANに相当すが，掲載されているパッケージ数は少ない（概ね5,000対28,000)。
+
+Cabalは，autoconf や automake によく例えられる。最も似ているのは，実際に<ruby><rb>構成</rb><rt>コンフィギュア</rt></ruby>したり<ruby><rb>構築</rb><rt>ビルド</rt></ruby>したりする際に，あらかじめ設定しておいた同じ<ruby><rb>構成</rb><rt>コンフィギュア</rt></ruby>が使われるという点である。
+
+```shell
+$ ./configure --prefix=...
+$ make
+$ make install
+```
+対応するのは，
+
+```shell
+$ cabal configure --prefix=...
+$ cabal build
+$ cabal install
+```
+簡単なパッケージを<ruby><rb>構築</rb><rt>ビルド</rt></ruby>する際のCabal の<ruby><rb>構築</rb><rt>ビルド</rt></ruby>システムは，make や automake よりも柔軟性はないが，Haskell のコードをどのように<ruby><rb>構築</rb><rt>ビルド</rt></ruby>するかという仕組みが内部に組み込まれているので，手作業で<ruby><rb>構成</rb><rt>コンフィギュア</rt></ruby>を調整する部分はほとんどない。Cabal の簡素な<ruby><rb>構築</rb><rt>ビルド</rt></ruby>システムは可搬性が高く，Windows においても cygwin や mingwin のような，疑似 Unix 環境は不要である。
+
+autoconf と比べ，Cabal はパッケージ<ruby><rb>構成</rb><rt>コンフィギュア</rt></ruby>について，別の方法を採用している。Cabal の手法は，自動パッケージ管理を重視する考えに基づいている。依存している要素の存否を調べたりする<ruby><rb>簡易言語</rb><rt>スクリプト</rt></ruby>を備える替わりに，Cabal パッケージは依存関係を明示している。<ruby><rb>選択可能</rb><rt>オプション</rt></ruby>，あるいは条件依存の場合はこの限りではない。パッケージ作者が依存関係を明示することにより，ツールによって，依存しているものも含めて自動的にパッケージを<ruby><rb>設置</rb><rt>インストール</rt></ruby>することが可能となっている。また，（ほぼ自動で）別のパッケージ<ruby><rb>形式</rb><rt>フォーマット</rt></ruby>，例えば RPM や deb のような依存関係を適切に扱える<ruby><rb>形式</rb><rt>フォーマット</rt></ruby>にも，変換することができる。
+
+## 3.<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>とパッケージの<ruby><rb>設置</rb><rt>インストール</rt></ruby>
+### 3.1. <ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>
+#### 3.1.1. 外観
+`cabal-install`の<ruby><rb>全処通用</rb><rt>グローバル</rt></ruby>な **<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>ファイル** は，`~/.cabal/config`である。もし，このファイルが存在しなければ，cabal は最初に`cabal update`が使われた際に作成する。他に，以下のように明示的に cabal にこのファイルを作成するよう指示することもできる。
+```shell
+$ cabal user-config update
+```
+<ruby><rb>全処通用</rb><rt>グローバル</rt></ruby>な<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>ファイルの場所を変更するには，コマンド発行の際に`--config-file=FILE `を指定するか，環境変数`CABAL_CONFIG`に指定する。
+
+<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>ファイルの<ruby><rb>選択肢</rb><rt>オプション</rt></ruby>のほとんどは，コマンド発行時の<ruby><rb>選択肢</rb><rt>オプション</rt></ruby>としても指定可能であるので，該当する（コマンド発行時の<ruby><rb>選択肢</rb><rt>オプション</rt></ruby>の）説明文を参照すれば，意味が理解できる。作成された<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>ファイルは，便利な<ruby><rb>選択肢</rb><rt>オプション</rt></ruby>のみ値を設定している。多くの<ruby><rb>選択肢</rb><rt>オプション</rt></ruby>は，妥当な初期値のままになっている。例えば，
+
+```yaml
+-- executable-stripping: True
+```
+が意味するところは，<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>ファイルは現在`executable-stripping` の選択肢を指定していないということを意味する（この行がコメント化されているので）。また，初期設定値は`True`ということである。初期設定として，実行可能な？？のストライピングを不可としたければ，この行を烏賊のように変えれば良い。
+```yaml
+executable-stripping: False
+```
+また，`cabal user-config update`コマンドを発行して，旧版の`cabal`で作成された<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>ファイルを移行させることもできる。
+
+#### 3.1.2. 環境変数
+多様な環境変数が`cabal-install`で使われる。
+
+```yaml
+CABAL_CONFIG
+```
+<ruby><rb>全処通用</rb><rt>グローバル</rt></ruby>な<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>ファイルを見つけるための変数。
+```yaml
+CABAL_DIR
+```
+`cabal-install`ファイルを収容するための初期設定ディレクトリ。初期設定値は`getAppUserDataDirectory "cabal"`であり，これの意味するところは，Unix システムでは`$HOME/.cabal`であり，Windows では`%APPDATA%\cabal`である。
+> 注記
+> `CABAL_DIR`は，将来`cabal-install`が`XDG Directory`機能を備えた時点で削除される予定である。
+```yaml
+CABAL_BUILDDIR
+```
+<ruby><rb>構築</rb><rt>ビルド</rt></ruby>作業を行う場所の初期設定値を上書きする。ただし，`nix-style`の<ruby><rb>構築</rb><rt>ビルド</rt></ruby>での，<ruby><rb>構築</rb><rt>ビルド</rt></ruby>ディレクトリ（`dist-newstyle`)は，この環境変数の値によらない。
+
+#### 3.1.2.1. <ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>ファイルの探索
+もし`$CABAL_CONFIG`が設定されているなら，それを使う。
+
+そうでなければ，もし`$CABAL_DIR`が設定されているなら`$CABAL_DIR/config`を使う。
+
+そうでなければ，`getAppUserDirectory "cabal"`を使う。
+
+もし<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>ファイルがそれでも見つからなければ，`cabal-install`は，初期設定値を使ったファイルを作成し，ディレクトリの起点は，もし設定されているなら`$CABAL_DIR` を，そうでなければ`getAppUserDirectory "cabal"`をプリフィックスとして使う。
+
+#### 3.1.3.  <ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>の詳述
+<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>の重要な要素の一つに，<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>の詳述がある。`cabal`が初期設定の<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>ファイルを作成する際は，中央 [Hackage](http://hackage.haskell.org/) サーバを使用するように設定する。
+
+```yaml
+repository hackage.haskell.org
+  url: http://hackage.haskell.org/
+```
+
+<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>の名前は，最初の行で与えられている。そして，これは何を設定しても良い。この<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>からダウンロードされたパッケージは，` ~/.cabal/packages/hackage.haskell.org`という場所に<ruby><rb>仮置き</rb><rt>キャッシュ</rt></ruby>される（あるいは，自分で指定したファイル名；`remoto-repo-cache`の値を変更すれば，プリフィックスを変更することもできる）。もし望むなら，複数の<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>を指定することも可能であり，`cabal`はこれらを組み合わせて使い，これらのいずれからもパッケージをダウンロードすることができる。
+
+#### 3.1.3.1. 安全な<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>の利用
+TUF セキュリティ基盤を利用可能な<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>([Hackage](http://hackage.haskell.org/) も含まれるを利用する場合は，以下の設定をすることで安全なアクセスが可能となる。
+
+```yaml
+repository hackage.haskell.org
+  url: http://hackage.haskell.org/
+  secure: True
+  root-keys: <root-key-IDs>
+  key-threshold: <key-threshold>
+```
+`<root-key-IDs>`と`<key-threshold>`の値は，<ruby><rb>初回の設定</rb><rt>ブートストラップ</rt></ruby>の際に使われる。
+ As part of the TUF infrastructure the repository will contain a file root.json (for instance, http://hackage.haskell.org/root.json) which the client needs to do verification. However, how can cabal verify the root.json file itself? This is known as bootstrapping: if you specify a list of root key IDs and a corresponding threshold, cabal will verify that the downloaded root.json file has been signed with at least <key-threshold> keys from your set of <root-key-IDs>.
+
+You can, but are not recommended to, omit these two fields. In that case cabal will download the root.json field and use it without verification. Although this bootstrapping step is then unsafe, all subsequent access is secure (provided that the downloaded root.json was not tampered with). Of course, adding root-keys and key-threshold to your repository specification only shifts the problem, because now you somehow need to make sure that the key IDs you received were the right ones. How that is done is however outside the scope of cabal proper.
+
+More information about the security infrastructure can be found at https://github.com/haskell/hackage-security.
+
+3.1.3.2. Local no-index repositories
+It’s possible to use a directory of .tar.gz package files as a local package repository.
+
+repository my-local-repository
+  url: file+noindex:///absolute/path/to/directory
+cabal will construct the index automatically from the package-name-version.tar.gz files in the directory, and will use optional corresponding package-name-version.cabal files as new revisions.
+
+For example, if /absolute/path/to/directory looks like
+
+/absolute/path/to/directory/
+    foo-0.1.0.0.tar.gz
+    bar-0.2.0.0.tar.gz
+    bar-0.2.0.0.cabal
+then cabal will create an index with two packages:
+
+foo-0.1.0.0 using the source and .cabal file inside foo-0.1.0.0.tar.gz
+
+bar-0.2.0.0 using the source inside bar-0.2.0.0.tar.gz and bar-0.2.0.0.cabal
+
+The index is cached inside the given directory. If the directory is not writable, you can append #shared-cache fragment to the URI, then the cache will be stored inside the remote-repo-cache directory. The part of the path will be used to determine the cache key part.
+
+Note
+
+cabal-install creates a .cache file, and will aggressively use its contents if it exists. Therefore if you change the contents of the directory, remember to wipe the cache too.
+
+Note
+
+The URI scheme file: is interpreted as a remote repository, as described in the previous sections, thus requiring manual construction of 01-index.tar file.
+
+3.1.3.3. Legacy repositories
+Currently cabal supports single kind of “legacy” repositories. It is specified using
+
+remote-repo: hackage.haskell.org:http://hackage.haskell.org/packages/archive
+This is just syntactic sugar for
+
+repository hackage.haskell.org
+  url: http://hackage.haskell.org/packages/archive
+although, in (and only in) the specific case of Hackage, the URL http://hackage.haskell.org/packages/archive will be silently translated to http://hackage.haskell.org/.
+
+3.1.3.4. Secure local repositories
+If you want to use repositories on your local file system, it is recommended instead to use a secure local repository:
+
+repository my-local-repo
+  url: file:/path/to/local/repo
+  secure: True
+  root-keys: <root-key-IDs>
+  key-threshold: <key-threshold>
+The layout of these secure local repos matches the layout of remote repositories exactly; the hackage-repo-tool can be used to create and manage such repositories.
+
+3.2. Building and installing packages
+To be written
+
+3.2.1. Installing packages from Hackage
+The cabal tool also can download, configure, build and install a Hackage package and all of its dependencies in a single step. To do this, run:
+
+$ cabal install [PACKAGE...]
+To browse the list of available packages, visit the Hackage web site.
+
+### 4.1. Quickstart
+> Tip
+> If this is your first time using cabal you should check out the Getting Started guide.
+
+Let’s assume we have created a project directory and already have a Haskell module or two.
+
+Every project needs a name, we’ll call this example “proglet”.
+```shell
+$ cd proglet/
+$ ls
+Proglet.hs
+```
+It is assumed that (apart from external dependencies) all the files that make up a package live under a common project root directory. This simple example has all the project files in one directory, but most packages will use one or more subdirectories.
+
+To turn this into a Cabal package we need two extra files in the project’s root directory:
+
+proglet.cabal: containing package metadata and build information.
+
+Setup.hs: usually containing a few standardized lines of code, but can be customized if necessary.
+
+We can create both files manually or we can use cabal init to create them for us.
+
+#### 4.1.1. Using “cabal init”
+The cabal init --interactive command is interactive. If we answer “no” to using the “sensible defaults” it asks a number of questions.
+```shell
+$ cabal init --interactive
+Should I generate a simple project with sensible defaults? [default: y] n
+What does the package build:
+   1) Executable
+   2) Library
+   3) Library and Executable
+Your choice?
+...
+```
+One of the important questions is whether the package contains a library and/or an executable. Libraries are collections of Haskell modules that can be re-used by other Haskell libraries and programs, while executables are standalone programs.
+
+For the moment these are the only choices. For more complex packages (e.g. a library and multiple executables or test suites) the .cabal file can be edited afterwards.
+
+After you make your selection (executable; library; or: library and executable) cabal asks us a number of questions starting with which version of the cabal specification to use, our package’s name (for example, “proglet”), and our package’s version.
+
+It also asks questions about various other bits of package metadata. For a package that you never intend to distribute to others, these fields can be left blank.
+
+Finally, cabal init --interactive creates the initial proglet.cabal and Setup.hs files, and depending on your choice of license, a LICENSE file as well.
+```shell
+Generating LICENSE...
+Generating Setup.hs...
+Generating proglet.cabal...
+```
+You may want to edit the .cabal file and add a Description field.
+At this stage the proglet.cabal is not quite complete and before you are able to build the package you will need to edit the file and add some build information about the library or executable.
+
+#### 4.1.2. Editing the .cabal file
+Load up the .cabal file in a text editor. The first part of the .cabal file has the package metadata and towards the end of the file you will find the executable or library section.
+
+You will see that the fields that have yet to be filled in are commented out. Cabal files use “--” Haskell-style comment syntax. (Note that comments are only allowed on lines on their own. Trailing comments on other lines are not allowed because they could be confused with program options.)
+
+If you selected earlier to create a library package then your .cabal file will have a section that looks like this:
+
+```yaml
+library
+  exposed-modules:     Proglet
+  -- other-modules:
+  -- build-depends:
+```
+Alternatively, if you selected an executable then there will be a section like:
+```yaml
+executable proglet
+  -- main-is:
+  -- other-modules:
+  -- build-depends:
+```
+The build information fields listed (but commented out) are just the few most important and common fields. There are many others that are covered later in this chapter.
+
+Most of the build information fields are the same between libraries and executables. The difference is that libraries have a number of “exposed” modules that make up the public interface of the library, while executables have a file containing a Main module.
+
+The name of a library always matches the name of the package, so it is not specified in the library section. Executables often follow the name of the package too, but this is not required and the name is given explicitly.
+
+#### 4.1.3. Modules included in the package
+For a library, cabal init looks in the project directory for files that look like Haskell modules and adds all the modules to the library:exposed-modules field. For modules that do not form part of your package’s public interface, you can move those modules to the other-modules field. Either way, all modules in the library need to be listed.
+
+For an executable, cabal init does not try to guess which file contains your program’s Main module. You will need to fill in the executable:main-is field with the file name of your program’s Main module (including .hs or .lhs extension). Other modules included in the executable should be listed in the other-modules field.
+
+#### 4.1.4. Modules imported from other packages
+While your library or executable may include a number of modules, it almost certainly also imports a number of external modules from the standard libraries or other pre-packaged libraries. (These other libraries are of course just Cabal packages that contain a library.)
+
+You have to list all of the library packages that your library or executable imports modules from. Or to put it another way: you have to list all the other packages that your package depends on.
+
+For example, suppose the example Proglet module imports the module Data.Map. The Data.Map module comes from the containers package, so we must list it:
+```yaml
+library
+  exposed-modules:     Proglet
+  other-modules:
+  build-depends:       containers, base == 4.*
+```
+In addition, almost every package also depends on the base library package because it exports the standard Prelude module plus other basic modules like Data.List.
+
+You will notice that we have listed base == 4.*. This gives a constraint on the version of the base package that our package will work with. The most common kinds of constraints are:
+```yaml
+pkgname >= n
+
+pkgname ^>= n (since Cabal 2.0)
+
+pkgname >= n && < m
+
+pkgname == n.* (since Cabal 1.6)
+```
+The last is just shorthand, for example base == 4.* means exactly the same thing as base >= 4 && < 5. Please refer to the documentation on the build-depends field for more information.
+
+Also, you can factor out shared build-depends (and other fields such as ghc-options) into a common stanza which you can import in your libraries and executable sections. For example:
+```yaml
+common shared-properties
+  default-language: Haskell2010
+  build-depends:
+    base == 4.*
+  ghc-options:
+    -Wall
+
+library
+  import: shared-properties
+  exposed-modules:
+    Proglet
+```
+Note that the import must be the first thing in the stanza. For more information see the Common stanzas section.
+
+#### 4.1.5. Building the package
+For simple packages that’s it! We can now try configuring and building the package:
+
+```shell
+$ cabal configure
+$ cabal build
+```
+Assuming those two steps worked then you can also install the package:
+
+```shell
+$ cabal install
+```
+For libraries this makes them available for use in GHCi or to be used by other packages. For executables it installs the program so that you can run it (though you may first need to adjust your system’s $PATH).
+
+#### 4.1.6. Next steps
+What we have covered so far should be enough for very simple packages that you use on your own system.
+
+The next few sections cover more details needed for more complex packages and details needed for distributing packages to other people.
+
+The previous chapter covers building and installing packages – your own packages or ones developed by other people.
+
+### 4.2. Package concepts
+Before diving into the details of writing packages it helps to understand a bit about packages in the Haskell world and the particular approach that Cabal takes.
+
+#### 4.2.1. The point of packages
+Packages are a mechanism for organising and distributing code. Packages are particularly suited for “programming in the large”, that is building big systems by using and re-using code written by different people at different times.
+
+People organise code into packages based on functionality and dependencies. Social factors are also important: most packages have a single author, or a relatively small team of authors.
+
+Packages are also used for distribution: the idea is that a package can be created in one place and be moved to a different computer and be usable in that different environment. There are a surprising number of details that have to be got right for this to work, and a good package system helps to simplify this process and make it reliable.
+
+Packages come in two main flavours: libraries of reusable code, and complete programs. Libraries present a code interface, an API, while programs can be run directly. In the Haskell world, library packages expose a set of Haskell modules as their public interface. Cabal packages can contain a library or executables or both.
+
+Some programming languages have packages as a builtin language concept. For example in Java, a package provides a local namespace for types and other definitions. In the Haskell world, packages are not a part of the language itself. Haskell programs consist of a number of modules, and packages just provide a way to partition the modules into sets of related functionality. Thus the choice of module names in Haskell is still important, even when using packages.
+
+#### 4.2.2. Package names and versions
+All packages have a name, e.g. “HUnit”. Package names are assumed to be unique. Cabal package names may contain letters, numbers and hyphens, but not spaces and may also not contain a hyphened section consisting of only numbers. The namespace for Cabal packages is flat, not hierarchical.
+
+Packages also have a version, e.g “1.1”. This matches the typical way in which packages are developed. Strictly speaking, each version of a package is independent, but usually they are very similar. Cabal package versions follow the conventional numeric style, consisting of a sequence of digits such as “1.0.1” or “2.0”. There are a range of common conventions for “versioning” packages, that is giving some meaning to the version number in terms of changes in the package, such as e.g. SemVer; however, for packages intended to be distributed via Hackage Haskell’s Package Versioning Policy applies (see also the PVP/SemVer FAQ section).
+
+The combination of package name and version is called the package ID and is written with a hyphen to separate the name and version, e.g. “HUnit-1.1”.
+
+For Cabal packages, the combination of the package name and version uniquely identifies each package. Or to put it another way: two packages with the same name and version are considered to be the same.
+
+Strictly speaking, the package ID only identifies each Cabal source package; the same Cabal source package can be configured and built in different ways. There is a separate installed package ID that uniquely identifies each installed package instance. Most of the time however, users need not be aware of this detail.
+
+#### 4.2.3. Kinds of package: Cabal vs GHC vs system
+It can be slightly confusing at first because there are various different notions of package floating around. Fortunately the details are not very complicated.
+
+- Cabal packages
+Cabal packages are really source packages. That is they contain Haskell (and sometimes C) source code.
+
+Cabal packages can be compiled to produce GHC packages. They can also be translated into operating system packages.
+
+- GHC packages
+This is GHC’s view on packages. GHC only cares about library packages, not executables. Library packages have to be registered with GHC for them to be available in GHCi or to be used when compiling other programs or packages.
+
+The low-level tool ghc-pkg is used to register GHC packages and to get information on what packages are currently registered.
+
+You never need to make GHC packages manually. When you build and install a Cabal package containing a library then it gets registered with GHC automatically.
+
+Haskell implementations other than GHC have essentially the same concept of registered packages. For the most part, Cabal hides the slight differences.
+
+Operating system packages
+On operating systems like Linux and Mac OS X, the system has a specific notion of a package and there are tools for installing and managing packages.
+
+The Cabal package format is designed to allow Cabal packages to be translated, mostly-automatically, into operating system packages. They are usually translated 1:1, that is a single Cabal package becomes a single system package.
+
+It is also possible to make Windows installers from Cabal packages, though this is typically done for a program together with all of its library dependencies, rather than packaging each library separately.
+
+#### 4.2.4. Unit of distribution
+The Cabal package is the unit of distribution. What this means is that each Cabal package can be distributed on its own in source or binary form. Of course there may be dependencies between packages, but there is usually a degree of flexibility in which versions of packages can work together so distributing them independently makes sense.
+
+It is perhaps easiest to see what being “the unit of distribution” means by contrast to an alternative approach. Many projects are made up of several interdependent packages and during development these might all be kept under one common directory tree and be built and tested together. When it comes to distribution however, rather than distributing them all together in a single tarball, it is required that they each be distributed independently in their own tarballs.
+
+Cabal’s approach is to say that if you can specify a dependency on a package then that package should be able to be distributed independently. Or to put it the other way round, if you want to distribute it as a single unit, then it should be a single package.
+
+#### 4.2.5. Explicit dependencies and automatic package management
+Cabal takes the approach that all packages dependencies are specified explicitly and specified in a declarative way. The point is to enable automatic package management. This means tools like cabal can resolve dependencies and install a package plus all of its dependencies automatically. Alternatively, it is possible to mechanically (or mostly mechanically) translate Cabal packages into system packages and let the system package manager install dependencies automatically.
+
+It is important to track dependencies accurately so that packages can reliably be moved from one system to another system and still be able to build it there. Cabal is therefore relatively strict about specifying dependencies. For example Cabal’s default build system will not even let code build if it tries to import a module from a package that isn’t listed in the .cabal file, even if that package is actually installed. This helps to ensure that there are no “untracked dependencies” that could cause the code to fail to build on some other system.
+
+The explicit dependency approach is in contrast to the traditional “./configure” approach where instead of specifying dependencies declaratively, the ./configure script checks if the dependencies are present on the system. Some manual work is required to transform a ./configure based package into a Linux distribution package (or similar). This conversion work is usually done by people other than the package author(s). The practical effect of this is that only the most popular packages will benefit from automatic package management. Instead, Cabal forces the original author to specify the dependencies but the advantage is that every package can benefit from automatic package management.
+
+The “./configure” approach tends to encourage packages that adapt themselves to the environment in which they are built, for example by disabling optional features so that they can continue to work when a particular dependency is not available. This approach makes sense in a world where installing additional dependencies is a tiresome manual process and so minimising dependencies is important. The automatic package management view is that packages should just declare what they need and the package manager will take responsibility for ensuring that all the dependencies are installed.
+
+Sometimes of course optional features and optional dependencies do make sense. Cabal packages can have optional features and varying dependencies. These conditional dependencies are still specified in a declarative way however and remain compatible with automatic package management. The need to remain compatible with automatic package management means that Cabal’s conditional dependencies system is a bit less flexible than with the “./configure” approach.
+
+> Note
+> GNU autoconf places restrictions on paths, including the path that the user builds a package from. Package authors using build-type: configure should be aware of these restrictions; because users may be unexpectedly constrained and face mysterious errors, it is recommended that build-type: configure is only used where strictly necessary.
+
+#### 4.2.6. Portability
+One of the purposes of Cabal is to make it easier to build packages on different platforms (operating systems and CPU architectures), with different compiler versions and indeed even with different Haskell implementations. (Yes, there are Haskell implementations other than GHC!)
+
+Cabal provides abstractions of features present in different Haskell implementations and wherever possible it is best to take advantage of these to increase portability. Where necessary however it is possible to use specific features of specific implementations.
+
+For example a package author can list in the package’s .cabal what language extensions the code uses. This allows Cabal to figure out if the language extension is supported by the Haskell implementation that the user picks. Additionally, certain language extensions such as Template Haskell require special handling from the build system and by listing the extension it provides the build system with enough information to do the right thing.
+
+Another similar example is linking with foreign libraries. Rather than specifying GHC flags directly, the package author can list the libraries that are needed and the build system will take care of using the right flags for the compiler. Additionally this makes it easier for tools to discover what system C libraries a package needs, which is useful for tracking dependencies on system libraries (e.g. when translating into Linux distribution packages).
+
+In fact both of these examples fall into the category of explicitly specifying dependencies. Not all dependencies are other Cabal packages. Foreign libraries are clearly another kind of dependency. It’s also possible to think of language extensions as dependencies: the package depends on a Haskell implementation that supports all those extensions.
+
+Where compiler-specific options are needed however, there is an “escape hatch” available. The developer can specify implementation-specific options and more generally there is a configuration mechanism to customise many aspects of how a package is built depending on the Haskell implementation, the operating system, computer architecture and user-specified configuration flags.
+
+## 5. Nix-style Local Builds
+Nix-style local builds are a new build system implementation inspired by Nix. The Nix-style local build system is commonly called “v2-build” for short after the cabal v2-* family of commands that control it. However, those names are only temporary now that Nix-style local builds have become the default. For those who do not wish to use the new functionality, the classic project style will not be removed immediately, but these legacy commands will require the usage of the v1- prefix as of Cabal 3.0 and will be removed in a future release. For a future-proof way to use these commands in a script or tutorial that anticipates the possibility of another UI paradigm being devised in the future, there are also v2- prefixed versions that will reference the same functionality until such a point as it is completely removed from Cabal.
+
+Nix-style local builds combine the best of non-sandboxed and sandboxed Cabal:
+
+Like sandboxed Cabal previously, we build sets of independent local packages deterministically and independent of any global state. v2-build will never tell you that it can’t build your package because it would result in a “dangerous reinstall.” Given a particular state of the Hackage index, your build is completely reproducible. For example, you no longer need to compile packages with profiling ahead of time; just request profiling and v2-build will rebuild all its dependencies with profiling automatically.
+
+Like non-sandboxed Cabal today, builds of external packages are cached in ~/.cabal/store, so that a package can be built once, and then reused anywhere else it is also used. No need to continually rebuild dependencies whenever you make a new sandbox: dependencies which can be shared, are shared.
+
+Nix-style local builds were first released as beta in cabal-install 1.24. They currently work with all versions of GHC supported by that release: GHC 7.0 and later.
+
+Some features described in this manual are not implemented. If you need them, please give us a shout and we’ll prioritize accordingly.
+
+5.1. Quickstart
+5.1.1. Developing multiple packages
+5.2. Cookbook
+5.2.1. How can I profile my library/application?
+5.3. How it works
+5.3.1. Local versus external packages
+5.3.2. Where are my build products?
+5.3.3. Caching
+
+### 5.1. Quickstart
+Suppose that you are in a directory containing a single Cabal package which you wish to build (if you haven’t set up a package yet check out developing packages for instructions). You can configure and build it using Nix-style local builds with this command (configuring is not necessary):
+
+```shell
+$ cabal v2-build
+```
+To open a GHCi shell with this package, use this command:
+
+```shell
+$ cabal v2-repl
+```
+To run an executable defined in this package, use this command:
+```shell
+$ cabal v2-run <executable name> [executable args]
+```
+#### 5.1.1. Developing multiple packages
+Many Cabal projects involve multiple packages which need to be built together. To build multiple Cabal packages, you need to first create a cabal.project file which declares where all the local package directories live. For example, in the Cabal repository, there is a root directory with a folder per package, e.g., the folders Cabal and cabal-install. The cabal.project file specifies each folder as part of the project:
+```yaml
+packages: Cabal/
+          cabal-install/
+```
+The expectation is that a cabal.project is checked into your source control, to be used by all developers of a project. If you need to make local changes, they can be placed in cabal.project.local (which should not be checked in.)
+
+Then, to build every component of every package, from the top-level directory, run the command: (using cabal-install-2.0 or greater.)
+
+```shell
+$ cabal v2-build all
+```
+To build a specific package, you can either run v2-build from the directory of the package in question:
+
+```shell
+$ cd cabal-install
+$ cabal v2-build
+```
+or you can pass the name of the package as an argument to cabal v2-build (this works in any subdirectory of the project):
+
+```shell
+$ cabal v2-build cabal-install
+```
+You can also specify a specific component of the package to build. For example, to build a test suite named package-tests, use the command:
+
+```shell
+$ cabal v2-build package-tests
+```
+Targets can be qualified with package names. So to request package-tests from the Cabal package, use Cabal:package-tests.
+
+Unlike sandboxes, there is no need to setup a sandbox or add-source projects; just check in cabal.project to your repository and v2-build will just work.
+
+### 5.2. Cookbook
+#### 5.2.1. How can I profile my library/application?
+Create or edit your cabal.project.local, adding the following line:
+
+```yaml
+profiling: True
+```
+Now, cabal v2-build will automatically build all libraries and executables with profiling. You can fine-tune the profiling settings for each package using profiling-detail:
+
+```yaml
+package p
+    profiling-detail: toplevel-functions
+```
+Alternately, you can call cabal v2-build --enable-profiling to temporarily build with profiling.
+
+### 5.3. How it works
+#### 5.3.1. Local versus external packages
+One of the primary innovations of Nix-style local builds is the distinction between local packages, which users edit and recompile and must be built per-project, versus external packages, which can be cached across projects. To be more precise:
+
+A local package is one that is listed explicitly in the packages, optional-packages or extra-packages field of a project. Usually, these refer to packages whose source code lives directly in a folder in your project. But you can list an arbitrary Hackage package in packages to force it to be treated as local.
+
+Local packages, as well as the external packages (below) which depend on them, are built inplace, meaning that they are always built specifically for the project and are not installed globally. Inplace packages are not cached and not given unique hashes, which makes them suitable for packages which you want to edit and recompile.
+
+An external package is any package which is not listed in the packages field. The source code for external packages is usually retrieved from Hackage.
+
+When an external package does not depend on an inplace package, it can be built and installed to a global store, which can be shared across projects. These build products are identified by a hash based on all of the inputs which influence the compilation of a package (flags, dependency selection, etc.). Just as in Nix, these hashes uniquely identify the result of a build; if we compute this identifier and we find that we already have this ID built, we can just use the already built version.
+
+The global package store is ~/.cabal/store (configurable via global store-dir option); if you need to clear your store for whatever reason (e.g., to reclaim disk space or because the global store is corrupted), deleting this directory is safe (v2-build will just rebuild everything it needs on its next invocation).
+
+This split motivates some of the UI choices for Nix-style local build commands. For example, flags passed to cabal v2-build are only applied to local packages, so that adding a flag to cabal v2-build doesn’t necessitate a rebuild of every transitive dependency in the global package store.
+
+In cabal-install 2.0 and above, Nix-style local builds also take advantage of a new Cabal library feature, per-component builds, where each component of a package is configured and built separately. This can massively speed up rebuilds of packages with lots of components (e.g., a package that defines multiple executables), as only one executable needs to be rebuilt. Packages that use Custom setup scripts are not currently built on a per-component basis.
+
+#### 5.3.2. Where are my build products?
+A major deficiency in the current implementation of v2-build is that there is no programmatic way to access the location of build products. The location of the build products is intended to be an internal implementation detail of v2-build, but we also understand that many unimplemented features can only be reasonably worked around by accessing build products directly.
+
+The location where build products can be found varies depending on the version of cabal-install:
+
+In cabal-install-1.24, the dist directory for a package p-0.1 is stored in dist-newstyle/build/p-0.1. For example, if you built an executable or test suite named pexe, it would be located at dist-newstyle/build/p-0.1/build/pexe/pexe.
+
+In cabal-install-2.0, the dist directory for a package p-0.1 defining a library built with GHC 8.0.1 on 64-bit Linux is dist-newstyle/build/x86_64-linux/ghc-8.0.1/p-0.1. When per-component builds are enabled (any non-Custom package), a subcomponent like an executable or test suite named pexe will be stored at dist-newstyle/build/x86_64-linux/ghc-8.0.1/p-0.1/c/pexe; thus, the full path of the executable is dist-newstyle/build/x86_64-linux/ghc-8.0.1/p-0.1/c/pexe/build/pexe/pexe (you can see why we want this to be an implementation detail!)
+
+In cabal-install-2.2 and above, the /c/ part of the above path is replaced with one of /l/, /x/, /f/, /t/, or /b/, depending on the type of component (sublibrary, executable, foreign library, test suite, or benchmark respectively). So the full path to an executable named pexe compiled with GHC 8.0.1 on a 64-bit Linux is now dist-newstyle/build/x86_64-linux/ghc-8.0.1/p-0.1/x/pexe/build/pexe/pexe; for a benchmark named pbench it now is dist-newstyle/build/x86_64-linux/ghc-8.0.1/p-0.1/b/pbench/build/pbench/pbench;
+
+The paths are a bit longer in 2.0 and above but the benefit is that you can transparently have multiple builds with different versions of GHC. We plan to add the ability to create aliases for certain build configurations, and more convenient paths to access particularly useful build products like executables.
+
+#### 5.3.3. Caching
+Nix-style local builds sport a robust caching system which helps to reduce the time it takes to execute a rebuild cycle. While the details of how cabal-install does caching are an implementation detail and may change in the future, knowing what gets cached is helpful for understanding the performance characteristics of invocations to v2-build. The cached intermediate results are stored in dist-newstyle/cache; this folder can be safely deleted to clear the cache.
+
+The following intermediate results are cached in the following files in this folder (the most important two are first):
+
+solver-plan (binary)
+The result of calling the dependency solver, assuming that the Hackage index, local cabal.project file, and local cabal files are unmodified. (Notably, we do NOT have to dependency solve again if new build products are stored in the global store; the invocation of the dependency solver is independent of what is already available in the store.)
+
+source-hashes (binary)
+The hashes of all local source files. When all local source files of a local package are unchanged, cabal v2-build will skip invoking setup build entirely (saving us from a possibly expensive call to ghc --make). The full list of source files participating in compilation is determined using cabal sdist --list-only. Thus if you do not list all your source files in a Cabal file, Cabal may fail to recompile when you edit them.
+
+config (same format as cabal.project)
+The full project configuration, merged from cabal.project (and friends) as well as the command line arguments.
+
+compiler (binary)
+The configuration of the compiler being used to build the project.
+
+improved-plan (binary)
+Like solver-plan, but with all non-inplace packages improved into pre-existing copies from the store.
+
+plan.json (JSON)
+A JSON serialization of the computed install plan intended for integrating cabal with external tooling. The cabal-plan package provides a library for parsing plan.json files into a Haskell data structure as well as an example tool showing possible applications.
+
+Todo
+
+Document JSON schema (including version history of schema)
+
+Note that every package also has a local cache managed by the Cabal build system, e.g., in $distdir/cache.
+
+## 6. cabal-install Commands
+We now give an in-depth description of all the commands, describing the arguments and flags they accept.
+
+### 6.1. cabal v2-configure
+cabal v2-configure takes a set of arguments and writes a cabal.project.local file based on the flags passed to this command. cabal v2-configure FLAGS; cabal v2-build is roughly equivalent to cabal v2-build FLAGS, except that with v2-configure the flags are persisted to all subsequent calls to v2-build.
+
+cabal v2-configure is intended to be a convenient way to write out a cabal.project.local for simple configurations; e.g., cabal v2-configure -w ghc-7.8 would ensure that all subsequent builds with cabal v2-build are performed with the compiler ghc-7.8. For more complex configuration, we recommend writing the cabal.project.local file directly (or placing it in cabal.project!)
+
+cabal v2-configure inherits options from Cabal. semantics:
+
+Any flag accepted by ./Setup configure.
+
+Any flag accepted by cabal configure beyond ./Setup configure, namely --cabal-lib-version, --constraint, --preference and --solver.
+
+Any flag accepted by cabal install beyond ./Setup configure.
+
+Any flag accepted by ./Setup haddock.
+
+The options of all of these flags apply only to local packages in a project; this behavior is different than that of cabal install, which applies flags to every package that would be built. The motivation for this is to avoid an innocuous addition to the flags of a package resulting in a rebuild of every package in the store (which might need to happen if a flag actually applied to every transitive dependency). To apply options to an external package, use a package stanza in a cabal.project file.
+
+### 6.2. cabal v2-update
+cabal v2-update updates the state of the package index. If the project contains multiple remote package repositories it will update the index of all of them (e.g. when using overlays).
+
+Some examples:
+```shell
+$ cabal v2-update                  # update all remote repos
+$ cabal v2-update head.hackage     # update only head.hackage
+```
+### 6.3. cabal v2-build
+cabal v2-build takes a set of targets and builds them. It automatically handles building and installing any dependencies of these targets.
+
+A target can take any of the following forms:
+
+A package target: package, which specifies that all enabled components of a package to be built. By default, test suites and benchmarks are not enabled, unless they are explicitly requested (e.g., via --enable-tests.)
+
+A component target: [package:][ctype:]component, which specifies a specific component (e.g., a library, executable, test suite or benchmark) to be built.
+
+All packages: all, which specifies all packages within the project.
+
+Components of a particular type: package:ctypes, all:ctypes: which specifies all components of the given type. Where valid ctypes are:
+
+libs, libraries,
+
+flibs, foreign-libraries,
+
+exes, executables,
+
+tests,
+
+benches, benchmarks.
+
+A module target: [package:][ctype:]module, which specifies that the component of which the given module is a part of will be built.
+
+A filepath target: [package:][ctype:]filepath, which specifies that the component of which the given filepath is a part of will be built.
+
+In component targets, package: and ctype: (valid component types are lib, flib, exe, test and bench) can be used to disambiguate when multiple packages define the same component, or the same component name is used in a package (e.g., a package foo defines both an executable and library named foo). We always prefer interpreting a target as a package name rather than as a component name.
+
+Some example targets:
+
+$ cabal v2-build lib:foo-pkg       # build the library named foo-pkg
+$ cabal v2-build foo-pkg:foo-tests # build foo-tests in foo-pkg
+$ cabal v2-build src/Lib.s         # build the library component to
+                                   # which "src/Lib.hs" belongs
+$ cabal v2-build app/Main.hs       # build the executable component of
+                                   # "app/Main.hs"
+$ cabal v2-build Lib               # build the library component to
+                                   # which the module "Lib" belongs
+Beyond a list of targets, cabal v2-build accepts all the flags that cabal v2-configure takes. Most of these flags are only taken into consideration when building local packages; however, some flags may cause extra store packages to be built (for example, --enable-profiling will automatically make sure profiling libraries for all transitive dependencies are built and installed.)
+
+In addition cabal v2-build accepts these flags:
+
+--only-configure: When given we will forego performing a full build and abort after running the configure phase of each target package.
+
+### 6.4. cabal v2-repl
+cabal v2-repl TARGET loads all of the modules of the target into GHCi as interpreted bytecode. In addition to cabal v2-build’s flags, it takes an additional --repl-options flag.
+
+To avoid ghci specific flags from triggering unneeded global rebuilds these flags are now stripped from the internal configuration. As a result --ghc-options will no longer (reliably) work to pass flags to ghci (or other repls). Instead, you should use the new --repl-options flag to specify these options to the invoked repl. (This flag also works on cabal repl and Setup repl on sufficiently new versions of Cabal.)
+
+Currently, it is not supported to pass multiple targets to v2-repl (v2-repl will just successively open a separate GHCi session for each target.)
+
+It also provides a way to experiment with libraries without needing to download them manually or to install them globally.
+
+This command opens a REPL with the current default target loaded, and a version of the vector package matching that specification exposed.
+
+$ cabal v2-repl --build-depends "vector >= 0.12 && < 0.13"
+Both of these commands do the same thing as the above, but only exposes base, vector, and the vector package’s transitive dependencies even if the user is in a project context.
+```shell
+$ cabal v2-repl --ignore-project --build-depends "vector >= 0.12 && < 0.13"
+$ cabal v2-repl --project='' --build-depends "vector >= 0.12 && < 0.13"
+```
+This command would add vector, but not (for example) primitive, because it only includes the packages specified on the command line (and base, which cannot be excluded for technical reasons).
+```shell
+$ cabal v2-repl --build-depends vector --no-transitive-deps
+```
+### 6.5. cabal v2-run
+cabal v2-run [TARGET [ARGS]] runs the executable specified by the target, which can be a component, a package or can be left blank, as long as it can uniquely identify an executable within the project. Tests and benchmarks are also treated as executables.
+
+See the v2-build section for the target syntax.
+
+Except in the case of the empty target, the strings after it will be passed to the executable as arguments.
+
+If one of the arguments starts with - it will be interpreted as a cabal flag, so if you need to pass flags to the executable you have to separate them with --.
+
+```shell
+$ cabal v2-run target -- -a -bcd --argument
+```
+v2-run also supports running script files that use a certain format. With a script that looks like:
+```Haskell
+#!/usr/bin/env cabal
+{- cabal:
+build-depends: base ^>= 4.11
+            , shelly ^>= 1.8.1
+-}
+main :: IO ()
+main = do
+    ...
+```
+It can either be executed like any other script, using cabal as an interpreter, or through this command:
+
+```shell
+$ cabal v2-run script.hs
+$ cabal v2-run script.hs -- --arg1 # args are passed like this
+```
+### 6.6. cabal v2-freeze
+cabal v2-freeze writes out a freeze file which records all of the versions and flags that are picked by the solver under the current index and flags. Default name of this file is cabal.project.freeze but in combination with a --project-file=my.project flag (see project-file) the name will be my.project.freeze. A freeze file has the same syntax as cabal.project and looks something like this:
+```yaml
+constraints: HTTP ==4000.3.3,
+             HTTP +warp-tests -warn-as-error -network23 +network-uri -mtl1 -conduit10,
+             QuickCheck ==2.9.1,
+             QuickCheck +templatehaskell,
+             -- etc...
+```
+For end-user executables, it is recommended that you distribute the cabal.project.freeze file in your source repository so that all users see a consistent set of dependencies. For libraries, this is not recommended: users often need to build against different versions of libraries than what you developed against.
+
+6.7. cabal v2-bench
+cabal v2-bench [TARGETS] [OPTIONS] runs the specified benchmarks (all the benchmarks in the current package by default), first ensuring they are up to date.
+
+### 6.8. cabal v2-test
+cabal v2-test [TARGETS] [OPTIONS] runs the specified test suites (all the test suites in the current package by default), first ensuring they are up to date.
+
+### 6.9. cabal v2-haddock
+cabal v2-haddock [FLAGS] [TARGET] builds Haddock documentation for the specified packages within the project.
+
+If a target is not a library haddock-benchmarks, haddock-executables, haddock-internal, haddock-tests will be implied as necessary.
+
+### 6.10. cabal v2-exec
+cabal v2-exec [FLAGS] [--] COMMAND [--] [ARGS] runs the specified command using the project’s environment. That is, passing the right flags to compiler invocations and bringing the project’s executables into scope.
+
+### 6.11. cabal v2-install
+cabal v2-install [FLAGS] PACKAGES builds the specified packages and symlinks/copies their executables in installdir (usually ~/.cabal/bin).
+
+For example this command will build the latest cabal-install and symlink its cabal executable:
+
+$ cabal v2-install cabal-install
+In addition, it’s possible to use cabal v2-install to install components of a local project. For example, with an up-to-date Git clone of the Cabal repository, this command will build cabal-install HEAD and symlink the cabal executable:
+
+```shell
+$ cabal v2-install exe:cabal
+```
+Where symlinking is not possible (eg. on some Windows versions) the copy method is used by default. You can specify the install method by using --install-method flag:
+
+```shell
+$ cabal v2-install exe:cabal --install-method=copy --installdir=$HOME/bin
+```
+Note that copied executables are not self-contained, since they might use data-files from the store.
+
+It is also possible to “install” libraries using the --lib flag. For example, this command will build the latest Cabal library and install it:
+
+```shell
+$ cabal v2-install --lib Cabal
+```
+This works by managing GHC environments. By default, it is writing to the global environment in `~/.ghc/
+$ARCH-$OS-$GHCVER/environments/default`. `v2-install` provides the `--package-env` flag to control which of these environments is modified.
+
+This command will modify the environment file in the current directory:
+```shell
+$ cabal v2-install --lib Cabal --package-env .
+```
+This command will modify the environment file in the ~/foo directory:
+
+```shell
+$ cabal v2-install --lib Cabal --package-env foo/
+```
+Do note that the results of the previous two commands will be overwritten by the use of other v2-style commands, so it is not recommended to use them inside a project directory.
+
+This command will modify the environment in the local.env file in the current directory:
+
+```shell
+$ cabal v2-install --lib Cabal --package-env local.env
+```
+This command will modify the myenv named global environment:
+
+```shell
+$ cabal v2-install --lib Cabal --package-env myenv
+```
+If you wish to create a named environment file in the current directory where the name does not contain an extension, you must reference it as `./myenv`.
+
+You can learn more about how to use these environments in this section of the GHC manual.
+
+### 6.12. cabal v2-clean
+cabal v2-clean [FLAGS] cleans up the temporary files and build artifacts stored in the dist-newstyle folder.
+
+By default, it removes the entire folder, but it can also spare the configuration and caches if the --save-config option is given, in which case it only removes the build artefacts (.hi, .o along with any other temporary files generated by the compiler, along with the build output).
+
+### 6.13. cabal v2-sdist
+cabal v2-sdist [FLAGS] [TARGETS] takes the crucial files needed to build TARGETS and puts them into an archive format ready for upload to Hackage. These archives are stable and two archives of the same format built from the same source will hash to the same value.
+
+cabal v2-sdist takes the following flags:
+
+-l, --list-only: Rather than creating an archive, lists files that would be included. Output is to stdout by default. The file paths are relative to the project’s root directory.
+
+-o, --output-directory: Sets the output dir, if a non-default one is desired. The default is dist-newstyle/sdist/. --output-directory - will send output to stdout unless multiple archives are being created.
+
+--null-sep: Only used with --list-only. Separates filenames with a NUL byte instead of newlines.
+
+v2-sdist is inherently incompatible with sdist hooks (which were removed in Cabal-3.0), not due to implementation but due to fundamental core invariants (same source code should result in the same tarball, byte for byte) that must be satisfied for it to function correctly in the larger v2-build ecosystem. autogen-modules is able to replace uses of the hooks to add generated modules, along with the custom publishing of Haddock documentation to Hackage.
+
+> Warning
+> Packages that use Backpack will stop working if uploaded to Hackage, due to issue #6005. While this is happening, we recommend not uploading these packages to Hackage (and instead referencing the package directly as a source-repository-package).
