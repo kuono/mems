@@ -8,9 +8,13 @@
 * Portability : macOS X
 -}
 {-# LANGUAGE BlockArguments #-}
-module MyLibTest (main) where
+module MyLibTest ( main
+                 , emptyD7d
+                 , emptyD80
+                 , emptyData807d
+                 ) where
 
-import Mems ( EvContents ( Tick ))
+import Mems ( EvContents ( Tick ), RData )
 import System.Random ( newStdGen, Random(randoms) )
 import qualified Data.ByteString.Char8 as BS
 import Data.Char ( chr )
@@ -49,7 +53,21 @@ dummyData = do
       r1 = Prelude.take 27 r 
       r2 = Prelude.take 31 $ Prelude.drop 28 r 
   return $ Tick (BS.pack (chr 28:r1),BS.pack (chr 32:r2))
-  
+
+--
+-- | It is ...
+emptyD80, emptyD7d :: BS.ByteString
+-- | psedue null data for 0x80 command. 28 bytes.
+emptyD80 = BS.pack $ map chr [0x1c,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00] 
+-- | psedue null data for 0x7d command. 32 bytes
+emptyD7d = BS.pack $ map chr [0x20,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]
+-- | psedue null data mixed
+emptyData807d :: RData 
+emptyData807d = (emptyD80, emptyD7d)
   
 -- emptyFrame :: Frame
 -- emptyFrame = Frame 

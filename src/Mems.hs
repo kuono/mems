@@ -22,9 +22,6 @@ module Mems
             -- type MEMS = ReaderT Env IO
             , parse    -- :: Data807d -> Frame
             , get807d
-            , emptyD7d
-            , emptyD80
-            , emptyData807d
             , mneUnknown
             , mname
             , opnpr
@@ -233,6 +230,7 @@ init (f,dc,cc,lc)= do
                     -- atomically $ writeTChan cc GetIACPos -- ^ 2020.01.11 追記
                     return $ Just Env { path = f, port = sp, model = md, dch = dc , cch = cc , lch = lc , tickt = tt } 
 --
+-- | This action binds up two data replyed by mems
 get807d :: MEMS EvContents
 get807d =  do
   e  <- ask
@@ -304,41 +302,66 @@ data Frame = Frame
 -- | ECU Commands
 type Command  = (Char,String) -- ^ ECU returns echo and one result byte. Command byte (send to ECU), Num of Response following bytes from ECU
 -- type Command' = (Char,String) -- ^ ECU returns only echo byte.
-opnfp, opnpr, opnac, clspv, opnO2, clsfp, clspr, clsac, opnpv, clsO2, clsf1, clsf2, icrft, dcrft :: Command
-icrft', dcrft', req7d, req80 , incid, decid, incis, decil, incia, decia :: Command
-clrft, htbt, actfi, figcl, reqip, opiac, cliac, rqiac :: Command
-opnfp = (chr 0x01,"Open Fuel Pump relay =stop") :: Command -- Open fuel pump relay (stop fuel pump) 
-opnpr = (chr 0x02,"Open PTC Relay")             :: Command -- Open PTC relay (inlet manifold heater)
-opnac = (chr 0x03,"Open A/C Relay")             :: Command -- Open air conditioning relay 
-clspv = (chr 0x08,"Close purge valve?")         :: Command -- Close purge valve ?
-opnO2 = (chr 0x09,"Open O2 heater relay?")      :: Command -- Open O2 heater relay ?
-clsfp = (chr 0x11,"Close Fuel Pump relay =run") :: Command -- Close fuel pump relay (run fuel pump)
-clspr = (chr 0x12,"Close PTC Relay")            :: Command -- Close PTC Relay (inlet manifold heater)
-clsac = (chr 0x13,"Close A/C Relay")            :: Command -- Close air conditioning relay
-opnpv = (chr 0x18,"Open purge valve?")          :: Command -- Open purge valve ?)
-clsO2 = (chr 0x19,"Close O2 heater relay ?")    :: Command -- Close O2 heater relay ?
-clsf1 = (chr 0x1d,"Close Fan 1 relay?")         :: Command -- Command' -- Close Fan 1 relay ? 
-clsf2 = (chr 0x1e,"Close Fan 2 relay?")         :: Command -- Command' -- Close Fan 2 relay ?
-icrft = (chr 0x79,"Increment Fuel Trim")        :: Command -- Increments fuel trim setting and returns the current value
-dcrft = (chr 0x7a,"Decrement Fuel Trim")        :: Command -- Decrements fuel trim setting and returns the current value
-icrft'= (chr 0x7b,"Increment Fuel Trim-2")      :: Command -- Increments fuel trim setting and returns the current value
-dcrft'= (chr 0x7c,"Decrement Fuel Trim-2")      :: Command -- Decrements fuel trim setting and returns the current value 
-req7d = (chr 0x7d,"Request data frame/7D")      :: Command -- get data for frame7d - followed by 32-byte data frame; 125
-req80 = (chr 0x80,"Request data frame/80")      :: Command -- get data for frame80 - followed by 28-byte data frame; 128
-incid = (chr 0x89,"Increments idle decay")      :: Command -- Increments idle decay setting and returns the current value
-decid = (chr 0x8a,"Decrements idle decay")      :: Command -- Decrements idle decay setting and returns the current value
-incis = (chr 0x91,"Increments idle speed")      :: Command -- Increments idle speed setting and returns the current value
-decil = (chr 0x92,"Decrements idle speed")      :: Command -- Decrements idle speed setting and returns the current value
-incia = (chr 0x93,"Increments ignition ad")     :: Command -- Increments ignition advance offset and returns the current value
-decia = (chr 0x94,"Decrements ignition ad")     :: Command -- Decrements ignition advance offset and returns the current value
-clrft = (chr 0xcc,"Clear fault code")           :: Command -- 204, Clear fault codes	CC 00
-htbt  = (chr 0xf4,"NOP/heartbeat?")             :: Command -- 0xf4 244 NOP / heartbeat? Sent continuously by handheld diagnostic tools to verify serial link.
-actfi = (chr 0xf7,"Actuate fuel incejtor")      :: Command -- F7 03 (SPI?)
-figcl = (chr 0xf8,"Fire ignition coil")         :: Command -- F8 02 
-reqip = (chr 0xfb,"Request IAC position")       :: Command -- FB xx where second byte represents the IAC position
-opiac = (chr 0xfd,"Open IAC one and get pos")   :: Command -- FD xx, where the second byte represents the IAC position
-cliac = (chr 0xfe,"Close IAC one and get pos")  :: Command
-rqiac = (chr 0xff,"Request current IAC pos?")   :: Command
+-- opnfp, opnpr, opnac, clspv, opnO2, clsfp, clspr, clsac, opnpv, clsO2, clsf1, clsf2, icrft, dcrft :: Command
+-- icrft', dcrft', req7d, req80 , incid, decid, incis, decil, incia, decia :: Command
+-- clrft, htbt, actfi, figcl, reqip, opiac, cliac, rqiac :: Command
+-- |  Open fuel pump relay (stop fuel pump) 
+opnfp :: Command
+opnfp = (chr 0x01,"Open Fuel Pump relay =stop") 
+-- | Open PTC relay (inlet manifold heater)
+opnpr :: Command
+opnpr = (chr 0x02,"Open PTC Relay") 
+-- | Open air conditioning relay
+opnac :: Command
+opnac = (chr 0x03,"Open A/C Relay")
+-- clspv = (chr 0x08,"Close purge valve?")         :: Command -- Close purge valve ?
+-- opnO2 = (chr 0x09,"Open O2 heater relay?")      :: Command -- Open O2 heater relay ?
+clsfp :: Command
+clsfp = (chr 0x11,"Close Fuel Pump relay =run") -- Close fuel pump relay (run fuel pump)
+-- clspr = (chr 0x12,"Close PTC Relay")            :: Command -- Close PTC Relay (inlet manifold heater)
+-- clsac = (chr 0x13,"Close A/C Relay")            :: Command -- Close air conditioning relay
+-- opnpv = (chr 0x18,"Open purge valve?")          :: Command -- Open purge valve ?)
+-- clsO2 = (chr 0x19,"Close O2 heater relay ?")    :: Command -- Close O2 heater relay ?
+-- clsf1 = (chr 0x1d,"Close Fan 1 relay?")         :: Command -- Command' -- Close Fan 1 relay ? 
+-- clsf2 = (chr 0x1e,"Close Fan 2 relay?")         :: Command -- Command' -- Close Fan 2 relay ?
+-- icrft = (chr 0x79,"Increment Fuel Trim")        :: Command -- Increments fuel trim setting and returns the current value
+-- dcrft = (chr 0x7a,"Decrement Fuel Trim")        :: Command -- Decrements fuel trim setting and returns the current value
+-- icrft'= (chr 0x7b,"Increment Fuel Trim-2")      :: Command -- Increments fuel trim setting and returns the current value
+-- dcrft'= (chr 0x7c,"Decrement Fuel Trim-2")      :: Command -- Decrements fuel trim setting and returns the current value 
+-- | get data for frame7d - followed by 32-byte data frame; 125
+req7d :: Command
+req7d = (chr 0x7d,"Request data frame/7D")
+-- | get data for frame80 - followed by 28-byte data frame; 128
+req80 :: Command
+req80 = (chr 0x80,"Request data frame/80") 
+-- incid = (chr 0x89,"Increments idle decay")      :: Command -- Increments idle decay setting and returns the current value
+-- decid = (chr 0x8a,"Decrements idle decay")      :: Command -- Decrements idle decay setting and returns the current value
+-- incis = (chr 0x91,"Increments idle speed")      :: Command -- Increments idle speed setting and returns the current value
+-- decil = (chr 0x92,"Decrements idle speed")      :: Command -- Decrements idle speed setting and returns the current value
+-- | Increments ignition advance offset and returns the current value
+incia :: Command
+incia = (chr 0x93,"Increments ignition ad") 
+-- | Decrements ignition advance offset and returns the current value
+decia :: Command
+decia = (chr 0x94,"Decrements ignition ad") 
+-- | 204, Clear fault codes	CC 00
+clrft :: Command
+clrft = (chr 0xcc,"Clear fault code") 
+-- | 0xf4 244 NOP / heartbeat? Sent continuously by handheld diagnostic tools to verify serial link.
+htbt :: (Char, [Char])
+htbt  = (chr 0xf4,"NOP/heartbeat?") 
+-- actfi = (chr 0xf7,"Actuate fuel incejtor")      :: Command -- F7 03 (SPI?)
+-- figcl = (chr 0xf8,"Fire ignition coil")         :: Command -- F8 02 
+-- | FB xx where second byte represents the IAC position
+reqip :: Command
+reqip = (chr 0xfb,"Request IAC position")
+-- | FD xx, where the second byte represents the IAC position
+opiac :: Command
+opiac = (chr 0xfd,"Open IAC one and get pos") 
+cliac :: Command
+cliac = (chr 0xfe,"Close IAC one and get pos") 
+-- rqiac = (chr 0xff,"Request current IAC pos?")   :: Command
+--
 --
 -- Actuator Command
 -- 
@@ -348,18 +371,18 @@ rqiac = (chr 0xff,"Request current IAC pos?")   :: Command
 --   AC relay, PTC relay, and fuel pump relay automatically after a short time 
 --   (i.e. without requiring the 'off' command). The 'off' command is acknowledged
 --   by the ECU, but apparently has no effect.
-fuelPumpOn, fuelPumpOff, ptcRelayOn, ptcRelayOff, acRelayOn, acRelayOff :: Command
-testInjectors, fireCoil, openIac, closeIac :: Command
-fuelPumpOn     = (chr 0x11,"Fuel Pump on")   :: Command -- 11 00
-fuelPumpOff    = (chr 0x01,"Fuel Pump off")  :: Command -- 01 00
-ptcRelayOn     = (chr 0x12,"ptc Relay on")   :: Command -- 12 00
-ptcRelayOff    = (chr 0x02,"ptc Relay off")  :: Command -- 02 00
-acRelayOn      = (chr 0x13,"a/c Relay on")   :: Command -- 13 00
-acRelayOff     = (chr 0x03,"a/c Relay off")  :: Command -- 03 00
-testInjectors  = (chr 0xf7,"test injectors") :: Command -- f7 03 (SPi ?)
-fireCoil       = (chr 0xf8,"fire coil")      :: Command -- f8 02
-openIac        = (chr 0xfd,"open IAC")       :: Command -- fd xx where the second byte represents the IAC position
-closeIac       = (chr 0xfe,"close IAC")      :: Command -- fe xx where the second byte represents the IAC position
+-- fuelPumpOn, fuelPumpOff, ptcRelayOn, ptcRelayOff, acRelayOn, acRelayOff :: Command
+-- testInjectors, fireCoil, openIac, closeIac :: Command
+-- fuelPumpOn     = (chr 0x11,"Fuel Pump on")   :: Command -- 11 00
+-- fuelPumpOff    = (chr 0x01,"Fuel Pump off")  :: Command -- 01 00
+-- ptcRelayOn     = (chr 0x12,"ptc Relay on")   :: Command -- 12 00
+-- ptcRelayOff    = (chr 0x02,"ptc Relay off")  :: Command -- 02 00
+-- acRelayOn      = (chr 0x13,"a/c Relay on")   :: Command -- 13 00
+-- acRelayOff     = (chr 0x03,"a/c Relay off")  :: Command -- 03 00
+-- testInjectors  = (chr 0xf7,"test injectors") :: Command -- f7 03 (SPi ?)
+-- fireCoil       = (chr 0xf8,"fire coil")      :: Command -- f8 02
+-- openIac        = (chr 0xfd,"open IAC")       :: Command -- fd xx where the second byte represents the IAC position
+-- closeIac       = (chr 0xfe,"close IAC")      :: Command -- fe xx where the second byte represents the IAC position
 -- cfd = 0xcc ::Word8  -- 204
 sndCmd80 :: MEMS (Either String BS.ByteString)
 sndCmd80 = getData req80
@@ -504,6 +527,7 @@ currentTime = do
 models :: [(BS.ByteString, ModelDataSet)]
 models = [ mneUnknown, mneAuto, mne10078, mne101070, mne101170 ] -- 28 = 0x1c = \FS, 14 = 0x0. = \SO
 mneUnknown, mneAuto, mne10078,mne101070,mne101170 :: (BS.ByteString, ModelDataSet)
+-- | psedue data set for unknown mems model.
 mneUnknown = (BS.pack $ map chr [0x00,0x00,0x00,0x00], 
               ModelDataSet { name = "unknown                      ", d8size = 28 , d7size = 14 })
 mneAuto    = (BS.pack $ map chr [0x3a, 0x00, 0x02, 0x14] {- 58,0,2,20 -}    ,
@@ -517,11 +541,12 @@ mne101170  = (BS.pack $ map chr [0x99, 0x00, 0x03, 0x03] {- 153, 0, 3,  3 -},
     -- https://blogs.yahoo.co.jp/dmxbd452/5751726.html
     -- http://www.minispares.com/product/Classic/MNE101070.aspx
 --
+-- | getting name of mems model from reply data from mems.
 mname :: ModelDataSet -> String
 mname = name
 --
 -- library functions
---
+-- | parse raw data to struct data
 parse :: Data807d -> Frame -- ここは何らかのParseライブラリを使い，可変長パラメタに対応したい
 parse (d8,d7) =  {-# SCC "parse" #-} 
   let d8l = ord (BS.index d8 0)
@@ -627,15 +652,7 @@ tryRecv1Byte p n
 -- toInt = fromIntegral . toInteger
 -- Lirary
 --
-emptyD80, emptyD7d :: BS.ByteString
-emptyD80 = BS.pack $ map chr [0x1c,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00] -- 28バイト
-emptyD7d = BS.pack $ map chr [0x20,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00] -- 32バイト
-emptyData807d :: Data807d
-emptyData807d = (emptyD80, emptyD7d)
+
 
 -- data Loop        = OpenLoop | ClosedLoop deriving (Show)
 
