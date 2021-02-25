@@ -27,6 +27,7 @@ module Mems
             , opnpr
             , opnac
             , someFunc
+            , projectName
             ) where
 import qualified Brick.BChan as BC
 import qualified Data.ByteString.Char8 as BS
@@ -105,6 +106,9 @@ type MEMS  = ReaderT Env IO
 someFunc :: IO ()
 someFunc = putStrLn "someFunc!"
 --
+-- | project name
+projectName :: String
+projectName = "MEMS"
 -- | wake up ecu
 run ::  MEMS a -> (FilePath,BC.BChan Event,TChan UCommand,TChan Event) -> IO ()
 run c r = Ex.bracket {- :: IO a	-> (a -> IO b) -> (a -> IO c)	-> IO c	 -}
