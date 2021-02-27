@@ -3,7 +3,7 @@
 ## 1. Haskell と Cabal を使い始める
 
 ### 1.1. Haskell のツール群を<ruby><rb>設置</rb><rt>インストール</rt></ruby>する
-`Haskell`のツール群を<ruby><rb>設置</rb><rt>インストール</rt></ruby>するためには，Linux や Mac を使っているなら[ghcup](https://www.haskell.org/ghcup/)を使って導入すればよい。Windows であれば，[こちらの導入手引](https://hub.zhox.com/posts/introducing-haskell-dev/)を参照のこと。
+`Haskell`のツール群を<ruby><rb>設置</rb><rt>インストール</rt></ruby>するためには，Linux や Mac を使っているなら [ghcup](https://www.haskell.org/ghcup/) を使って導入すればよい。Windows であれば，[こちらの導入手引](https://hub.zhox.com/posts/introducing-haskell-dev/)を参照のこと。
 
 ### 1.2. 新しいアプリケーションを作成する
 Haskell のパッケージのディレクトリ構造や外部の依存モジュールをどのように加えるかを学ぶために，まず簡単な Haskell のアプリケーションを一から作ってみよう。
@@ -28,38 +28,36 @@ Setup.hs
 ```
 `Main.hs`は，パッケージのコードを格納するファイルである。初期設定では，`cabal init` は初期設定ではパッケージ名と同じ名前，この例では`myfirstapp`を使って実行可能ファイルを作成する。`cabal init`でライブラリだけを作成するなら`--lib`を，ライブラリと実行ファイルを作成するなら`--libandexe`をつける。他の<ruby><rb>選択肢</rb><rt>オプション</rt></ruby>については`cabal init --help`を参照されたい。
 
-`myfirstapp.cabal`は，Cabal のメタデータファイルであり，作成しようとしているパッケージや，そのパッケージを作成する際に依存しているパッケージについての説明が記述されている。
-myfirstapp.cabal is Cabal’s metadata file which describes your package and its dependencies. We’ll be updating this file in a little bit when we add an external dependency to our package.
+`myfirstapp.cabal`は，Cabal のメタデータファイルであり，作成しようとしているパッケージや，そのパッケージを作成する際に依存しているパッケージについての説明が記述されている。作成するパッケージに新たな外部依存パッケージが必要となったら，このファイルに少し手を加えることになる。
 
-### 1.2.2. Running the application
-As mentioned above, cabal init with no arguments generates a package with a single executable that prints "Hello, Haskell!" to the terminal. To run the executable enter the following command:
-
+### 1.2.2. アプリケーションを走らせる
+上述のように，`cabal init`と引数なしで動作させると，端末に「Hello, Haskell!」と表示するだけの実行可能プログラムを一つ作成する。この実行可能プログラムを稼働させるには，以下のコマンドを入力する：
 ```shell
 cabal run :myfirstapp
 ```
-You should see the following output in the terminal:
+すると，端末には以下のように表示されるであろう。
 ```shell
 $ cabal run :myfirstapp
 ...
 Hello, Haskell!
 Note
 ```
-The : prefix in :myfirstapp signifies that the myfirstapp target is part of the current package.
+「`:myfirstapp`」の<ruby><rb>接頭辞</rb><rt>プリフィックス</rt></ruby>「`：`」は，`myfirstapp`のターゲットが現在のパッケージの一部であることを意味している。
 
-Notice that we didn’t need to run a build command before cabal run, this is because cabal run first determines if the code needs to be re-built before running the executable. If you just want to build a target you can do so with cabal build:
-
+`cabal run`を実行する際に，事前に`cabal build`を実行していないことに気づかれたであろうか。これは，`cabal run`の実行過程で，まず先に実行可能プログラムを走らせる前に，コードを再<ruby><rb>構築</rb><rt>ビルド</rt></ruby>する必要があるかどうかを調べるためである。単にターゲットを<ruby><rb>構築</rb><rt>ビルド</rt></ruby>したいだけなら，以下のように<ruby><rb>構築</rb><rt>ビルド</rt></ruby>だけすればよい。
 ```shell
 cabal build :myfirstapp
 ```
-### 1.2.3. Adding dependencies
-Next we’ll add an external dependency to our application. Hackage is the Haskell community’s central package archive of open source software.
+### 1.2.3. 依存パッケージを加える
+次に，作成したアプリケーションに外部依存パッケージを加えよう。[Hackage](http://hackage.haskell.org/) は，Haskell コミュニティの中でオープンソース<ruby><rb>軟件</rb><rt>ソフトウェア</rt></ruby>の中心位置にあるパッケージ<ruby><rb>庫</rb><rt>アーカイブ</rt></ruby>である。
 
+作成しているアプリケーションでは，haskell-say というパッケージを使う。これは，端末に，ちょっとした装飾を付けて文言を表示するためのパッケージである。
 In our application, we’ll use a package called haskell-say to print text to the terminal with some embellishment.
 
-> Tip
-> If you installed cabal a while ago but haven’t used it recently you may need to update the package index, you can do this by running cabal update.
+> 注記
+> もし`cabal`を<ruby><rb>設置</rb><rt>インストール</rt></ruby>してから少し時間がたっていて，しかもその間使ったことがなかったら，パッケージの索引を更新しなければならないかもしれない。更新には`cabal update`を実行する必要がある。
 
-In our myfirstapp.cabal file we’ll update the build-depends attribute of the executable myfirstapp section to include haskell-say:
+myfirstapp.cabal には，executable myfirstapp 節に build-depends 属性を加え，そこに haskell-say を追記する。
 ```yaml
 executable myfirstapp
     main-is: Main.hs
@@ -67,11 +65,10 @@ executable myfirstapp
         base >=4.11 && <4.12,
         haskell-say ^>=1.0.0.0
 ```
-> Note
-> `^>=1.0.0.0` means use version 1.0.0.0 of the library or any more recent minor release with the same major version.
+> 注記
+> `^>=1.0.0.0` は，ライブラリの第 1.0.0.0 以降の，メジャーバージョンが同じでよりあたらしい，マイナー改良版を使うことを意味している。
 
-Next we’ll update Main.hs to use the HaskellSay library:
-
+次に，`Main.hs`を更新して，HaskellSay ライブラリを使うようにしよう。
 ```Haskell
 module Main where
 
@@ -81,10 +78,9 @@ main :: IO ()
 main =
   haskellSay "Hello, Haskell! You're using a function from another package!"
 ```
-import HaskellSay (haskellSay) brings the haskellSay function from the module named HaskellSay into scope. The HaskellSay module is defined in the haskell-say packages that we added a dependency on above.
+`import HaskellSay (haskellSay) `は，`HaskellSay`という名前のモジュールにある`haskellSay`関数を見えるようにする。`HaskellSay`モジュールは，`haskell-say`パッケージで定義されており，このパッケージは先程，依存していると追記した。
 
-Now you can build and re-run your code to see the new output:
-
+それでは，`cabal build`を実行し，再度，コードを走らせて新しい出力がどうなるかを見てみよう。
 ```
 $ cabal run
     ________________________________________________________
@@ -109,11 +105,11 @@ $ cabal run
      /    /  /    /   \    \
     /____/  /____/     \____\
 ```
-### 1.3. What Next?
-Now that you know how to set up a simple Haskell package using Cabal, check out some of the resources on the Haskell website’s documentation page or read more about packages and Cabal on the introduction page.
+### 1.3. 次は?
+これで，Cabal を使って，簡単な Haskell のパッケージを作り上げる方法をご理解いただけたであろうか。引き続き，Haskell のウェブサイトにある説明ページにある使えそうな情報を見たり，導入ページの Cabal やその他のパッケージに関する説明を読んでみてはどうだろう。
 
 ---
-Cabal は，[Haskell](http://www.haskell.org/) の標準パッケージシステムである。Cabal によって，Haskell のソフトウェアを設定したり，<ruby><rb>構築</rb><rt>ビルド</rt></ruby>したり，<ruby><rb>設置</rb><rt>インストール</rt></ruby>することができ，その上，他のユーザーや開発者に配布することもできる。
+Cabal は，[Haskell](http://www.haskell.org/) の標準パッケージシステムである。Cabal によって，Haskell のソフトウェアを設定したり，<ruby><rb>構築</rb><rt>ビルド</rt></ruby>したり，<ruby><rb>設置</rb><rt>インストール</rt></ruby>することができ，その上，他のユーザーや開発者に配布するときにも使用する。
 
 `cabal`は，Cabal パッケージという仕組みの上で動作するコマンドラインツールである。cabal によって，すでに存在しているパッケージの<ruby><rb>設置</rb><rt>インストール</rt></ruby>ができる他，独自のパッケージの開発も行うことができる。<ruby><rb>手元</rb><rt>ローカル</rt></ruby>にあるパッケージを使うこともできるし，<ruby><rb>遠隔地</rb><rt>リモート</rt></ruby>のパッケージ<ruby><rb>庫</rb><rt>アーカイブ</rt></ruby>からもってきたパッケージを，依存するパッケージをも含めて自動的に<ruby><rb>設置</rb><rt>インストール</rt></ruby>することもできる。初期設定では，[Hackage](http://hackage.haskell.org/) という，数千のライブラリやアプリケーションを Cabal パッケージ<ruby><rb>形式</rb><rt>フォーマット</rt></ruby>で掲載している Haskell の標準パッケージ<ruby><rb>庫</rb><rt>アーカイブ</rt></ruby>を使うように設定されている。
 
@@ -132,17 +128,17 @@ Cabal パッケージの<ruby><rb>形式</rb><rt>フォーマット</rt></ruby>�
 パッケージは，Haskell言語の一部ではなく，CabalとGHC（あるいはいくつかのHaskellの他のコンパイラ）の組み合わせで機能が実現されている。
 
 ### 2.1 パッケージを扱う道具
-cabal という名前のコマンドラインツールは，ユーザーや開発者が Cabal パッケージをビルドしたり<ruby><rb>設置</rb><rt>インストール</rt></ruby>したりできるようにする。このツールは，ローカルなパッケージにも使えるし，ネットワーク越しにリモートでアクセスするパッケージも扱うことができる。自動的に Cabal パッケージや，そのパッケージが依存している他の Cabal パッケージををインストールすることができる。
+cabal という名前のコマンドラインツールは，ユーザーや開発者が Cabal パッケージをビルドしたり<ruby><rb>設置</rb><rt>インストール</rt></ruby>したりできるようにする。このツールは，<ruby><rb>手元</rb><rt>ローカル</rt></ruby>なパッケージにも使えるし，ネットワーク越しにリモートでアクセスするパッケージも扱うことができる。自動的に Cabal パッケージや，そのパッケージが依存している他の Cabal パッケージををインストールすることができる。
 
-開発者は，このツールをローカルディレクトリに入れるパッケージで使うことができる。例えば，
+開発者は，このツールを<ruby><rb>手元</rb><rt>ローカル</rt></ruby>のディレクトリに入れるパッケージで使うことができる。例えば，
 
 ```shell
 $ cd foo/
 $ cabal install
 ```
-ローカルなディレクトリにあるパッケージを扱う際は，開発者はそれぞれ単独で<ruby><rb>構成</rb><rt>コンフィギュア</rt></ruby>や<ruby><rb>構築</rb><rt>ビルド</rt></ruby>を行うこともできるし，<ruby><rb>説明文書</rb><rt>ドキュメント</rt></ruby>を生成したり，テストを走らせたり，ベンチマークをとったりすることもできる。
+<ruby><rb>手元</rb><rt>ローカル</rt></ruby>のディレクトリにあるパッケージを扱う際は，開発者はそれぞれ単独で<ruby><rb>構成</rb><rt>コンフィギュア</rt></ruby>や<ruby><rb>構築</rb><rt>ビルド</rt></ruby>を行うこともできるし，<ruby><rb>説明文書</rb><rt>ドキュメント</rt></ruby>を生成したり，テストを走らせたり，ベンチマークをとったりすることもできる。
 
-一度にいくつかのパッケージを<ruby><rb>手元</rb><rt>ローカル</rt>に<ruby><rb>設置</rb><rt>インストール</rt></ruby>することもできる。例えば，
+一度にいくつかのパッケージを<ruby><rb>手元</rb><rt>ローカル</rt></ruby>に<ruby><rb>設置</rb><rt>インストール</rt></ruby>することもできる。例えば，
 
 ```shell
 $ cabal install foo/ bar/
@@ -190,7 +186,7 @@ Cabal および関係ツールや関係ウェブサイトは，以下の機能�
 - Web および<ruby><rb>手元</rb><rt>ローカル</rt></ruby>の Cabal パッケージ<ruby><rb>庫</rb><rt>アーカイブ</rt></ruby>
   - 1,000以上の Cabal パッケージを格納した中央 Hackage サイト
 
-このシステムの一部は，他の要素がなくとも動作する。典型的には，簡素なパッケージを<ruby><rb>構築</rb><rt>ビルド</rt></ruby>するために最初から組み込まれている<ruby><rb>構築</rb><rt>ビルド</rt></ruby>システムはオプションである：カスタム<ruby><rb>構築</rb><rt>ビルド</rt></ruby>システムを使用することも可能である。Some parts of the system can be used without others. In particular the built-in build system for simple packages is optional: it is possible to use custom build systems.
+このシステムの一部は，他の要素がなくとも動作する。典型的には，簡素なパッケージを<ruby><rb>構築</rb><rt>ビルド</rt></ruby>するために最初から組み込まれている<ruby><rb>構築</rb><rt>ビルド</rt></ruby>システムは<ruby><rb>選択肢</rb><rt>オプション</rt></ruby>である：カスタム<ruby><rb>構築</rb><rt>ビルド</rt></ruby>システムを使用することも可能である。Some parts of the system can be used without others. In particular the built-in build system for simple packages is optional: it is possible to use custom build systems.
 
 ### 2.4. 類似のシステム
 
@@ -218,8 +214,8 @@ autoconf と比べ，Cabal はパッケージ<ruby><rb>構成</rb><rt>コンフ�
 
 ## 3.<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>とパッケージの<ruby><rb>設置</rb><rt>インストール</rt></ruby>
 ### 3.1. <ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>
-#### 3.1.1. 外観
-`cabal-install`の<ruby><rb>全処通用</rb><rt>グローバル</rt></ruby>な **<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>ファイル** は，`~/.cabal/config`である。もし，このファイルが存在しなければ，cabal は最初に`cabal update`が使われた際に作成する。他に，以下のように明示的に cabal にこのファイルを作成するよう指示することもできる。
+#### 3.1.1. 概観
+`cabal-install` を使う上で，<ruby><rb>全処通用</rb><rt>グローバル</rt></ruby>な<ruby><rb>構成</rb><rt>コンフィギュレーション</rt></ruby>ファイルは，`~/.cabal/config`である。もし，このファイルが存在しなければ，cabal は最初に`cabal update`が使われた際に作成する。他に，以下のように明示的に cabal にこのファイルを作成するよう指示することもできる。
 ```shell
 $ cabal user-config update
 ```
@@ -283,95 +279,105 @@ repository hackage.haskell.org
   root-keys: <root-key-IDs>
   key-threshold: <key-threshold>
 ```
-`<root-key-IDs>`と`<key-threshold>`の値は，<ruby><rb>初回の設定</rb><rt>ブートストラップ</rt></ruby>の際に使われる。
- As part of the TUF infrastructure the repository will contain a file root.json (for instance, http://hackage.haskell.org/root.json) which the client needs to do verification. However, how can cabal verify the root.json file itself? This is known as bootstrapping: if you specify a list of root key IDs and a corresponding threshold, cabal will verify that the downloaded root.json file has been signed with at least <key-threshold> keys from your set of <root-key-IDs>.
+`<root-key-IDs>`と`<key-threshold>`の値は，<ruby><rb>初回の起動</rb><rt>ブートストラップ</rt></ruby>の際に使われる。
 
-You can, but are not recommended to, omit these two fields. In that case cabal will download the root.json field and use it without verification. Although this bootstrapping step is then unsafe, all subsequent access is secure (provided that the downloaded root.json was not tampered with). Of course, adding root-keys and key-threshold to your repository specification only shifts the problem, because now you somehow need to make sure that the key IDs you received were the right ones. How that is done is however outside the scope of cabal proper.
+TUF 基盤の一部として，<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>は`root.json`というファイル（例えば，[`http://hackage.haskell.org/root.json`](http://hackage.haskell.org/root.json)）を保有している。これは，利用者が認証をする際に必要になるファイルである。しかしながら，`cabal`はどうやって`root.json`ファイル自体を認証するのだろうか？これは，<ruby><rb>初回の起動</rb><rt>ブートストラップ</rt></ruby>の問題である。もし，<ruby><rb>根</rb><rt>ルート</rt></ruby>となるキー ID や対応する<ruby><rb>基準線</rb><rt>スレッショルドのリスト</rt></ruby>を特定するなら，`cabal`は少なくともあなたが`<root-key-IDs>`の中で設定したキー`<key-threshold>`で署名された`root.json`をダウンロードする。
 
-More information about the security infrastructure can be found at https://github.com/haskell/hackage-security.
+おすすめというわけではないが，この２つの欄は未記入のままにもできる。その場合，cabal は`root.json`ファイルをダウンロードし，認証無しでそれを使用する。このような<ruby><rb>起動</rb><rt>ブートストラップ</rt></ruby>手順は安全ではないが，引き続き行われるアクセスは安全である（ダウンロードされた`root.json`が改変されていない限り）。もちろん，`root-keys`や`key-threshold`を，あなたの<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>の記述に追加しても，問題を先送りするだけである。なぜなら，こんどはそこで受け取った key ID が正しいものであることを確かなものにしなければならないからだ。これについては，cabal  自身では解決できない。
 
-3.1.3.2. Local no-index repositories
-It’s possible to use a directory of .tar.gz package files as a local package repository.
+安全基盤についての情報は，[hackageの安全について](https://github.com/haskell/hackage-security) を参照のこと.
 
+##### 3.1.3.2. 手元にある索引なしの<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>
+
+任意の場所にあるディレクトリ内の`.tar.gz`パッケージファイルを，<ruby><rb>手元にある</rb><rt>ローカル</rt></ruby><ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>として使うこともできる。
+
+```cabal
 repository my-local-repository
   url: file+noindex:///absolute/path/to/directory
-cabal will construct the index automatically from the package-name-version.tar.gz files in the directory, and will use optional corresponding package-name-version.cabal files as new revisions.
+```
+cabal は，自動的にディレクトリ内に`package-name-version.tar.gz`ファイルから索引を作成し，`package-name-version.cabal`ファイルを新しい版用に対応する選択肢の一つとして使用する。
 
-For example, if /absolute/path/to/directory looks like
-
+例えば，以下のようなファイルが`/absolute/path/to/directory`にあるとき，
+```shell
 /absolute/path/to/directory/
     foo-0.1.0.0.tar.gz
     bar-0.2.0.0.tar.gz
     bar-0.2.0.0.cabal
-then cabal will create an index with two packages:
+```
+cabal は，ふたつのパッケージについて索引を作成する。
 
-foo-0.1.0.0 using the source and .cabal file inside foo-0.1.0.0.tar.gz
+情報源を使用して，または`.cabal`ファイルの中の`foo-0.1.0.0.tar.gz`を使用して，`foo-0.1.0.0`を作成
 
-bar-0.2.0.0 using the source inside bar-0.2.0.0.tar.gz and bar-0.2.0.0.cabal
+`bar-0.2.0.0.tar.gz`内の情報源を利用して，あるいは`bar-0.2.0.2.cabal`を利用して`bar-0.2.0.0`を作成
 
-The index is cached inside the given directory. If the directory is not writable, you can append #shared-cache fragment to the URI, then the cache will be stored inside the remote-repo-cache directory. The part of the path will be used to determine the cache key part.
+作成した索引は，与えられたディレクトリ内に<ruby><rb>一時保管</rb><rt>キャッシュ</rt></ruby>される。もしそのディレクトリが書込み可能でなければ，`#shared-cache`<ruby><rb>形式</rb><rt>フォーマット</rt></ruby>をURIに追記することもできる。その場合，<ruby><rb>一時保管</rb><rt>キャッシュ</rt></ruby>は，<ruby><rb>遠隔地の</rb><rt>リモート</rt></ruby>`remoto-repo-cache`ディレクトリに保管される。（`remoto-repo-cache`の）`path`の部分が，<ruby><rb>一時保管</rb><rt>キャッシュ</rt></ruby>保管場所の特定に使用される。
 
-Note
+> 注記
+> `cabal-install`は，`.cache`ファイルを作成し，存在するなら積極的にそこに保管された内容を活用する。それ故，もしこのディレクトリを変更したときは，<ruby><rb>一時保管</rb><rt>キャッシュ</rt></ruby>の消去をお忘れなく。
 
-cabal-install creates a .cache file, and will aggressively use its contents if it exists. Therefore if you change the contents of the directory, remember to wipe the cache too.
+> 注記
+> `URI scheme file:`は，前節で説明したように，<ruby><rb>遠隔地</rb><rt>リモート</rt></ruby>の<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>として翻訳される。それ故，`01-index.tar`ファイルを手作業で構築することが必要になる。
 
-Note
+##### 3.1.3.3. <ruby><rb>旧形式</rb><rt>レガシー</rt></ruby><ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>
+現在，`cabal`は一種類の「 <ruby><rb>旧形式</rb><rt>レガシー</rt></ruby><ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>」に対応している。これは，以下のように指定する。
 
-The URI scheme file: is interpreted as a remote repository, as described in the previous sections, thus requiring manual construction of 01-index.tar file.
-
-3.1.3.3. Legacy repositories
-Currently cabal supports single kind of “legacy” repositories. It is specified using
-
+```cabal
 remote-repo: hackage.haskell.org:http://hackage.haskell.org/packages/archive
-This is just syntactic sugar for
-
+```
+これは，以下の形式の<ruby><rb>糖衣構文</rb><rt>シンタックスシュガー</rt></ruby>である。
+```
 repository hackage.haskell.org
   url: http://hackage.haskell.org/packages/archive
-although, in (and only in) the specific case of Hackage, the URL http://hackage.haskell.org/packages/archive will be silently translated to http://hackage.haskell.org/.
+```
+ただし，特定の Hackage でのみ, [http://hackage.haskell.org/packages/archive](http://hackage.haskell.org/packages/archive) は水面下で [http://hackage.haskell.org/](http://hackage.haskell.org/) に置き換えられる。.
 
-3.1.3.4. Secure local repositories
-If you want to use repositories on your local file system, it is recommended instead to use a secure local repository:
-
+##### 3.1.3.4. 安全な<ruby><rb>手元</rb><rt>ローカル</rt></ruby><ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>
+もし<ruby><rb>手元</rb><rt>ローカル</rt></ruby>のファイルシステムにある<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>を使いたいなら，安全な<ruby><rb>手元</rb><rt>ローカル</rt></ruby><ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>を使うことをおすすめする。
+```cabal
 repository my-local-repo
   url: file:/path/to/local/repo
   secure: True
   root-keys: <root-key-IDs>
   key-threshold: <key-threshold>
-The layout of these secure local repos matches the layout of remote repositories exactly; the hackage-repo-tool can be used to create and manage such repositories.
+```
+これら<ruby><rb>手元</rb><rt>ローカル</rt></ruby>な<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>の配置は，<ruby><rb>遠隔地</rb><rt>リモート</rt></ruby>の<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>の配置と厳密に一致していなければならない。`hackage-pero-tool`は，このような<ruby><rb>保管庫</rb><rt>リポジトリ</rt></ruby>の作成や管理に使われる。
 
-3.2. Building and installing packages
-To be written
+### 3.2. パッケージの<ruby><rb>構築</rb><rt>ビルド</rt></ruby>や<ruby><rb>設置</rb><rt>インストール</rt></ruby>
 
-3.2.1. Installing packages from Hackage
-The cabal tool also can download, configure, build and install a Hackage package and all of its dependencies in a single step. To do this, run:
+後日追記
 
+#### 3.2.1. Hackage からパッケージを<ruby><rb>設置</rb><rt>インストール</rt></ruby>する
+`cabal`ツールは，Hackage のパッケージやその依存先をダウンロードしたり<ruby><rb>構成</rb><rt>コンフィギュア</rt></ruby>したり，<ruby><rb>構築</rb><rt>ビルド</rt></ruby>したり，<ruby><rb>設置</rb><rt>インストール</rt></ruby>することを一操作でできる。これを行うには，以下のようにする。
+
+```shell
 $ cabal install [PACKAGE...]
-To browse the list of available packages, visit the Hackage web site.
+```
+利用可能なパッケージの一覧表については，[Hackage のウェブサイト](http://hackage.haskell.org/) を参照されたい。
 
 ### 4.1. Quickstart
-> Tip
-> If this is your first time using cabal you should check out the Getting Started guide.
+> 注記
+> もし cabal の初心者であれば，まず「はじめに（Getting Started guide）」を読むと良い。
 
-Let’s assume we have created a project directory and already have a Haskell module or two.
+プロジェクトのディレクトリは作成済みで，Haskell モジュールもひとつふたつすでに利用可能であることを仮定しよう。
 
-Every project needs a name, we’ll call this example “proglet”.
+すべてのプロジェクトは名前が必要である。ここでは，“proglet”という名前を使おう。
 ```shell
 $ cd proglet/
 $ ls
 Proglet.hs
 ```
-It is assumed that (apart from external dependencies) all the files that make up a package live under a common project root directory. This simple example has all the project files in one directory, but most packages will use one or more subdirectories.
+（外部の依存を除き，）パッケージを構成するすべてのファイルは`common project`の<ruby><rb>根</rb><rt>ルート</rt></ruby>ディレクトリの中にあると仮定しよう。この単純な例では，すべてのプロジェクトファイルは一箇所のディレクトリ内に格納されているが，実際には多くのパッケージは，一つ以上のサブディレクトリを使っていることが多いが。
 
-To turn this into a Cabal package we need two extra files in the project’s root directory:
+Cabal パッケージにするため，他に２つのファイルがプロジェクトの<ruby><rb>根</rb><rt>ルート</rt></ruby>ディレクトリに存在しなければならない。
+```cabal
+proglet.cabal: パッケージのメタデータおよび<ruby><rb>構築</rb><rt>ビルド</rt></ruby>情報を含む
 
-proglet.cabal: containing package metadata and build information.
+Setup.hs: 通常は，標準的な数行のコードを含んでいるが，必要ならこれを改変しても良い。
+```
+この２つのファイルは手作業で作成しても良いし，`cabal init`で自動作成しても良い。
 
-Setup.hs: usually containing a few standardized lines of code, but can be customized if necessary.
-
-We can create both files manually or we can use cabal init to create them for us.
-
-#### 4.1.1. Using “cabal init”
-The cabal init --interactive command is interactive. If we answer “no” to using the “sensible defaults” it asks a number of questions.
+#### 4.1.1. “cabal init” を使う
+`cabal init --interactive`コマンドは，対話的に使う。もし，"sensible defaults" に "no" と答えれば，質問がいくつもされる。
 ```shell
 $ cabal init --interactive
 Should I generate a simple project with sensible defaults? [default: y] n
@@ -382,29 +388,31 @@ What does the package build:
 Your choice?
 ...
 ```
-One of the important questions is whether the package contains a library and/or an executable. Libraries are collections of Haskell modules that can be re-used by other Haskell libraries and programs, while executables are standalone programs.
+重要な質問の一つに，パッケージの構成がある。ライブラリのみか，実行可能ファイルのみか，あるいはその両方か，というものである。ライブラリは，Haskell のモジュールの集まりで，他の Haskell ライブラリやプログラムから再利用される。実行可能ファイルとは，単独で実行可能なプログラムのことである。
 
-For the moment these are the only choices. For more complex packages (e.g. a library and multiple executables or test suites) the .cabal file can be edited afterwards.
+この時点では，これらは単なる選択でしかない。もっと複雑なパッケージ（例えばライブラリと複数の実行可能プログラムと試験一式からなるようなパッケージ）については，後で，.cabal ファイルを編集することができる。
 
-After you make your selection (executable; library; or: library and executable) cabal asks us a number of questions starting with which version of the cabal specification to use, our package’s name (for example, “proglet”), and our package’s version.
+（実行可能ファイル，ライブラリ，ライブラリと実行可能ファイルの両方の）選択を行った後，cabal は，使用する cabal の<ruby><rb>版</rb><rt>バージョン</rt><ruby>はいずれかといった質問から始まり，パッケージの名前（例えば "proglet"），パッケージの<ruby><rb>版</rb><rt>バージョン</rt><ruby>数を尋ねられたりする。
 
-It also asks questions about various other bits of package metadata. For a package that you never intend to distribute to others, these fields can be left blank.
+また，その他多くのパッケージのメタデータに関する質問がある。外部に公開するつもりがないなら，そうした質問の解答欄は空欄で良い。
 
-Finally, cabal init --interactive creates the initial proglet.cabal and Setup.hs files, and depending on your choice of license, a LICENSE file as well.
+最後に，`cabal init --interactive`は，最初の（<ruby><rb>版</rb><rt>バージョン</rt><ruby>の） proglet.cabal と Setup.hs ファイル，ライセンスの質問の回答に応じた LICENCE ファイルを作成する。
+
 ```shell
 Generating LICENSE...
 Generating Setup.hs...
 Generating proglet.cabal...
 ```
-You may want to edit the .cabal file and add a Description field.
-At this stage the proglet.cabal is not quite complete and before you are able to build the package you will need to edit the file and add some build information about the library or executable.
 
-#### 4.1.2. Editing the .cabal file
-Load up the .cabal file in a text editor. The first part of the .cabal file has the package metadata and towards the end of the file you will find the executable or library section.
+.cabal ファイルを編集することもできるし，Description フィールドを追加することもできる。この段階では，proglet.cabal ファイルは完成しているわけではない。パッケージを<ruby><rb>構築</rb><rt>ビルド</rt></ruby>する前に，ファイルを編集したり，ライブラリや実行可能プログラムの<ruby><rb>構築</rb><rt>ビルド</rt></ruby>情報を追記する必要がある。
 
-You will see that the fields that have yet to be filled in are commented out. Cabal files use “--” Haskell-style comment syntax. (Note that comments are only allowed on lines on their own. Trailing comments on other lines are not allowed because they could be confused with program options.)
+#### 4.1.2. .cabal ファイルを編集する
 
-If you selected earlier to create a library package then your .cabal file will have a section that looks like this:
+テキストエディタに .cabal ファイルを読み込もう。.cabal ファイルの最初にかかれているのは，パッケージのメタデータであり，その後に<ruby><rb>実行可能ファイル</rb><rt>executable</rt></ruby>及び<ruby><rb>ライブラリ</rb><rt>library</rt></ruby>に関する部分が続く。
+
+内容が記述されていないフィールドについてはコメント化してあることに気が付かれただろうか。Cabal は，Haskell 様式の`--`を使ったコメント文法を使う（コメント化は行またぎできず，その行のみ有効である。別行にコメントを続けることは，プログラムの<ruby><rb>選択肢</rb><rt>オプション</rt></ruby>で混乱を引き起こす可能性があるので，許されていない）。
+
+前節でライブラリパッケージの作成を選択した場合，.cabal ファイルはこのような体裁のセクションを持つ。
 
 ```yaml
 library
@@ -412,20 +420,21 @@ library
   -- other-modules:
   -- build-depends:
 ```
-Alternatively, if you selected an executable then there will be a section like:
+選択肢として，実行可能ファイルの作成を選択した場合，以下のような部分があるであろう。
 ```yaml
 executable proglet
   -- main-is:
   -- other-modules:
   -- build-depends:
 ```
-The build information fields listed (but commented out) are just the few most important and common fields. There are many others that are covered later in this chapter.
+ここでは<ruby><rb>構築</rb><rt>ビルド</rt></ruby>情報フィールドは一覧に出ているのは，コメント化されているも含め，よく使われているもののみある。その他に，本書で後述するような多くの記述要素がある。
 
-Most of the build information fields are the same between libraries and executables. The difference is that libraries have a number of “exposed” modules that make up the public interface of the library, while executables have a file containing a Main module.
+<ruby><rb>構築</rb><rt>ビルド</rt></ruby>情報フィールドの多くは，ライブラリと実行可能ファイルで同じである。違いは，ライブラリには「<ruby><rb>外部に見せる</rb><rt>exposed</rt></ruby>モジュールの記述欄があり，これがライブラリのインタフェースとなるが，実行可能ファイルの場合は「Mainモジュール」を含むファイルの記述欄がある点である。
 
-The name of a library always matches the name of the package, so it is not specified in the library section. Executables often follow the name of the package too, but this is not required and the name is given explicitly.
+ライブラリ名は，パッケージ名と一致させなければならない。それゆえ，ライブラリ記述部にはライブラリ名を記述する部分はない。実行可能ファイルも多くの場合はパッケージ名と同一名とするが，必須ではないので，名前は明示的に与えられる。
 
-#### 4.1.3. Modules included in the package
+#### 4.1.3. パッケージ中に含まれるモジュール
+
 For a library, cabal init looks in the project directory for files that look like Haskell modules and adds all the modules to the library:exposed-modules field. For modules that do not form part of your package’s public interface, you can move those modules to the other-modules field. Either way, all modules in the library need to be listed.
 
 For an executable, cabal init does not try to guess which file contains your program’s Main module. You will need to fill in the executable:main-is field with the file name of your program’s Main module (including .hs or .lhs extension). Other modules included in the executable should be listed in the other-modules field.
