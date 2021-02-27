@@ -435,13 +435,15 @@ executable proglet
 
 #### 4.1.3. パッケージ中に含まれるモジュール
 
-For a library, cabal init looks in the project directory for files that look like Haskell modules and adds all the modules to the library:exposed-modules field. For modules that do not form part of your package’s public interface, you can move those modules to the other-modules field. Either way, all modules in the library need to be listed.
+ライブラリについては，`cabal init`はプロジェクトディレクトリ内でファイルを探し，Haskell のモジュールであれば，これを`library:exposed-modules`フィールドに追加していく。パッケージの外部とのインタフェースに不要なモジュールの場合，これを`other-modules`フィールドに移動してよい。いずれにしても，ライブラリが必要なすべてのモジュールがいずれかに記述されている必要がある。
 
-For an executable, cabal init does not try to guess which file contains your program’s Main module. You will need to fill in the executable:main-is field with the file name of your program’s Main module (including .hs or .lhs extension). Other modules included in the executable should be listed in the other-modules field.
+実行可能プログラムについては，`cabal init`はプログラムの Main モジュールがいずれかということを推測しない。`executable:main-is`フィールドに，Main モジュールとなるファイル名（`.hs`または`.lhs`拡張子の記述が必要）を記述する必要がある。実行可能プログラム中のその他のモジュールは，`other-modules`フィールドに記述する必要がある。
 
-#### 4.1.4. Modules imported from other packages
-While your library or executable may include a number of modules, it almost certainly also imports a number of external modules from the standard libraries or other pre-packaged libraries. (These other libraries are of course just Cabal packages that contain a library.)
+#### 4.1.4. 他のパッケージからインポートするモジュール
 
+作成するライブラリや実行可能プログラムのモジュールは，おそらく標準ライブラリあるいは<ruby><rb>あらかじめかためてある</rb><rt>pre-packaged</rt></ruby>ライブラリに含まれているたくさんの外部モジュールを使用するであろう。（もちろん，こうしたライブラリは，Cabalパッケージとしてある。）
+
+ライブラリや実行可能プログラムがインポートするモジュールは，すべて一覧に記述しなければならない。あるいは，別の方法としては，
 You have to list all of the library packages that your library or executable imports modules from. Or to put it another way: you have to list all the other packages that your package depends on.
 
 For example, suppose the example Proglet module imports the module Data.Map. The Data.Map module comes from the containers package, so we must list it:
