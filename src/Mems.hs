@@ -633,16 +633,15 @@ tryIO n a -- try n times action
           tryIO (n-1) a 
         else
           return $ Right r
---
+-- | nバイトの受信を試みる
 tryRecvNBytes :: SerialPort -> BS.ByteString -> Int -> IO BS.ByteString
-tryRecvNBytes ecuport !acc n =  
-    if n <= 0
-      then return acc
-      else do
-        r <- tryRecv1Byte ecuport 10
-        if r == BS.empty
-          then return acc
-          else do threadDelay 1000 ; tryRecvNBytes ecuport (BS.append acc r) (n - 1)
+tryRecvNBytes ecuport !acc n  
+  | n <= 0    = return acc
+  | otherwise = do
+                  r <- tryRecv1Byte ecuport 10
+                  if r == BS.empty
+                    then return acc
+                    else do threadDelay 1000 ; tryRecvNBytes ecuport (BS.append acc r) (n - 1)
 -- | repeat n times to read 1 byte from ecu
 tryRecv1Byte :: SerialPort
              -> Int              -- ^ times to try

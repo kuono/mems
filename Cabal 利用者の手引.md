@@ -116,7 +116,7 @@ Cabal は，[Haskell](http://www.haskell.org/) の標準パッケージシステ
 ## 2. はじめに
 Cabal は，Haskell ソフトウエアのパッケージシステムである。パッケージシステムのポイントは，ソフトウェアの開発者やユーザーが簡単にソフトウェアを配布したり使用したり再利用したりすることができるようにする点である。パッケージシステムは，ユーザーの手にソフトウェアを届けるのを簡単にする。これに負けず劣らず重要なのは，ソフトウェア開発者にとっては，他の開発者が作成したソフトウェア部品を再利用できるようになることである。
 
-パッケージシステムは，パッケージを扱う。Cabal が扱うパッケージは，**Cabal パッケージ**である。Cabal パッケージ は，配布の単位となる。すべての Cabal パッケージは，パッケージ名とバージョン番号を与えられており，パッケージの識別のもとになる（例：`filepath-1.0`)。
+パッケージシステムは，パッケージを扱う。Cabal が扱うパッケージは，**Cabal パッケージ**である。Cabal パッケージ は，配布の単位となる。すべての Cabal パッケージは，パッケージ名と<ruby><rb>版番号</rb><rt>バージョンナンバー</rt></ruby>を与えられており，パッケージの識別のもとになる（例：`filepath-1.0`)。
 
 Cabal パッケージは，他の Cabal パッケージに依存することができる。パッケージ管理を自動で行うためのツールもある。これの意味するところは，開発者やユーザーは，パッケージををインストールする際，依存するパッケージも含めて自動的にインストールできるということである。また，多くの開発者によって書かれたコードを再利用したたくさんのパッケージを使って，きわめて独立性の高いシステムを実用的に作成することができるという意味でもある。
 
@@ -392,11 +392,11 @@ Your choice?
 
 この時点では，これらは単なる選択でしかない。もっと複雑なパッケージ（例えばライブラリと複数の実行可能プログラムと試験一式からなるようなパッケージ）については，後で，.cabal ファイルを編集することができる。
 
-（実行可能ファイル，ライブラリ，ライブラリと実行可能ファイルの両方の）選択を行った後，cabal は，使用する cabal の<ruby><rb>版</rb><rt>バージョン</rt><ruby>はいずれかといった質問から始まり，パッケージの名前（例えば "proglet"），パッケージの<ruby><rb>版</rb><rt>バージョン</rt><ruby>数を尋ねられたりする。
+（実行可能ファイル，ライブラリ，ライブラリと実行可能ファイルの両方の）選択を行った後，cabal は，使用する cabal の<ruby><rb>版</rb><rt>バージョン</rt></ruby>はいずれかといった質問から始まり，パッケージの名前（例えば "proglet"），パッケージの<ruby><rb>版番号</rb><rt>バージョンナンバー</rt></ruby>を尋ねられたりする。
 
 また，その他多くのパッケージのメタデータに関する質問がある。外部に公開するつもりがないなら，そうした質問の解答欄は空欄で良い。
 
-最後に，`cabal init --interactive`は，最初の（<ruby><rb>版</rb><rt>バージョン</rt><ruby>の） proglet.cabal と Setup.hs ファイル，ライセンスの質問の回答に応じた LICENCE ファイルを作成する。
+最後に，`cabal init --interactive`は，最初の（<ruby><rb>版</rb><rt>バージョン</rt></ruby>の） proglet.cabal と Setup.hs ファイル，ライセンスの質問の回答に応じた LICENCE ファイルを作成する。
 
 ```shell
 Generating LICENSE...
@@ -443,31 +443,30 @@ executable proglet
 
 作成するライブラリや実行可能プログラムのモジュールは，おそらく標準ライブラリあるいは<ruby><rb>あらかじめかためてある</rb><rt>pre-packaged</rt></ruby>ライブラリに含まれているたくさんの外部モジュールを使用するであろう。（もちろん，こうしたライブラリは，Cabalパッケージとしてある。）
 
-ライブラリや実行可能プログラムがインポートするモジュールは，すべて一覧に記述しなければならない。あるいは，別の方法としては，
-You have to list all of the library packages that your library or executable imports modules from. Or to put it another way: you have to list all the other packages that your package depends on.
+ライブラリや実行可能プログラムがインポートするモジュールは，すべて一覧に記述しなければならない。あるいは，別の記述を行うこともある：作成するパッケージが依存するすべてのパッケージを記述するという方法だ。
 
-For example, suppose the example Proglet module imports the module Data.Map. The Data.Map module comes from the containers package, so we must list it:
+例えば，例としている Proglet モジュールは，`Data.Map`モジュールをインポートしている。`Data.Map`モジュールは，`containers`パッケージの中にあるので，これを記述する。
 ```yaml
 library
   exposed-modules:     Proglet
   other-modules:
   build-depends:       containers, base == 4.*
 ```
-In addition, almost every package also depends on the base library package because it exports the standard Prelude module plus other basic modules like Data.List.
+加えて，ほとんどすべてのパッケージは，標準`Prelude`モジュールや`Data.List`など基本的なモジュールを外部公開している`base`ライブラリパッケージに依存しているであろう。
 
-You will notice that we have listed base == 4.*. This gives a constraint on the version of the base package that our package will work with. The most common kinds of constraints are:
+以下のような記述に気づかれたであろうか：`==4.*`。これは，作成しているパッケージが必要とする`base`パッケージの<ruby><rb>版番号</rb><rt>バージョンナンバー</rt></ruby>の制約を表現している。よく使われる制約の表現は以下の通り：
 ```yaml
 pkgname >= n
 
-pkgname ^>= n (since Cabal 2.0)
+pkgname ^>= n (Cabal 2.0 以降)
 
 pkgname >= n && < m
 
-pkgname == n.* (since Cabal 1.6)
+pkgname == n.* (Cabal 1.6 以降)
 ```
-The last is just shorthand, for example base == 4.* means exactly the same thing as base >= 4 && < 5. Please refer to the documentation on the build-depends field for more information.
+最後の例は，短縮形で，例えば，`base == 4.*`という記述は，`base >= 4 && < 5`という表現と全く同一のことを意味する。詳細については，`build-depends`フィールドの説明を参照されたい。
 
-Also, you can factor out shared build-depends (and other fields such as ghc-options) into a common stanza which you can import in your libraries and executable sections. For example:
+また，`build-depends`（や`ghc-options`のような他のフィールド）を，`common`部にまとめて記述し，`libraries`部や`executable`部で共用することもできる。例えば，
 ```yaml
 common shared-properties
   default-language: Haskell2010
@@ -481,80 +480,78 @@ library
   exposed-modules:
     Proglet
 ```
-Note that the import must be the first thing in the stanza. For more information see the Common stanzas section.
+共用部品のインポートは，各部の冒頭でなければならないことに注意してほしい。詳細については，`Common`部の節を参照されたい。
 
-#### 4.1.5. Building the package
-For simple packages that’s it! We can now try configuring and building the package:
+#### 4.1.5. パッケージを<ruby><rb>構築</rb><rt>ビルド</rt></ruby>する
+
+簡単なパッケージについては，これでおしまいである。次に，パッケージの<ruby><rb>構成</rb><rt>コンフィギュア</rt></ruby>や<ruby><rb>構築</rb><rt>ビルド</rt></ruby>を行っていこう。
 
 ```shell
 $ cabal configure
 $ cabal build
 ```
-Assuming those two steps worked then you can also install the package:
+この２段階が無事終了したら，パッケージの<ruby><rb>設置</rb><rt>インストール</rt></ruby>をすることも可能である。
 
 ```shell
 $ cabal install
 ```
-For libraries this makes them available for use in GHCi or to be used by other packages. For executables it installs the program so that you can run it (though you may first need to adjust your system’s $PATH).
+ライブラリは，これらの作業をすることで，`GHCi`の中や，他のライブラリで使えるようになる。実行可能プログラムについては，プログラムが<ruby><rb>設置</rb><rt>インストール</rt></ruby>されることで，実行可能となる（ただし，まずシステムの`$PATH`を調整する必要があるかもしれない）。
 
-#### 4.1.6. Next steps
-What we have covered so far should be enough for very simple packages that you use on your own system.
+#### 4.1.6. 次の段階
+これまでの記述内容が理解できれば，簡単なパッケージを操作するには十分である。
 
-The next few sections cover more details needed for more complex packages and details needed for distributing packages to other people.
+引き続く数節では，さらに複雑なパッケージや，パッケージを他の人に配布する際に必要となる詳細な内容を扱う。
 
-The previous chapter covers building and installing packages – your own packages or ones developed by other people.
+本章では，自分が作成したり他人が開発したパッケージの<ruby><rb>構築</rb><rt>ビルド</rt></ruby>や<ruby><rb>設置</rb><rt>インストール</rt>を扱った。
 
-### 4.2. Package concepts
-Before diving into the details of writing packages it helps to understand a bit about packages in the Haskell world and the particular approach that Cabal takes.
+### 4.2. パッケージの概念
 
-#### 4.2.1. The point of packages
-Packages are a mechanism for organising and distributing code. Packages are particularly suited for “programming in the large”, that is building big systems by using and re-using code written by different people at different times.
+パッケージの書き方を学ぶ前に，Haskell の世界でのパッケージの概念や，Cabal がいかにこれを扱うかについて少し学んでいこう。
 
-People organise code into packages based on functionality and dependencies. Social factors are also important: most packages have a single author, or a relatively small team of authors.
+#### 4.2.1. パッケージの要点
+パッケージは，コードを整理し，配布するための仕組みである。パッケージは，典型的には「大きく<ruby><rb>作譜</rb><rt>プログラミング</rt></ruby>する」ために編み出されたもので，多くの人が別々のタイミングで記述したコードの利用を重ねてより大きなシステムを<ruby><rb>構築</rb><rt>ビルド</rt></ruby>するために使われる。
 
-Packages are also used for distribution: the idea is that a package can be created in one place and be moved to a different computer and be usable in that different environment. There are a surprising number of details that have to be got right for this to work, and a good package system helps to simplify this process and make it reliable.
+コードをパッケージにまとめるにあたっては，機能と依存をもとに整理する。社会的要素も重要である：通常，パッケージは一人の作者か，相対的に小さな集団が関わっている。
 
-Packages come in two main flavours: libraries of reusable code, and complete programs. Libraries present a code interface, an API, while programs can be run directly. In the Haskell world, library packages expose a set of Haskell modules as their public interface. Cabal packages can contain a library or executables or both.
+パッケージはまた，配布の際にも使用される：要は，パッケージさえ作成すれば，別のコンピュータに移動でき，異なった環境でも利用できる。こうした事を正しく行うために設定すべきことは非常にたくさんあるが，正しく作られていれば，この移動の過程は簡単かつ信頼の置けるものになる。
 
-Some programming languages have packages as a builtin language concept. For example in Java, a package provides a local namespace for types and other definitions. In the Haskell world, packages are not a part of the language itself. Haskell programs consist of a number of modules, and packages just provide a way to partition the modules into sets of related functionality. Thus the choice of module names in Haskell is still important, even when using packages.
+パッケージは，二種類に分かれる：再使用可能なコードのライブラリと，完全な，実行可能プログラムである。ライブラリは，コードのインタフェース，API を提供し，プログラムはそれ自身単独で実行可能である。Haskell の世界では，ライブラリパッケージは公開インタフェースとして Haskell のモジュール集を外部に公開している。Cabal パッケージは，ライブラリ，実行可能プログラム，あるいはその両方を含めることができる。
 
-#### 4.2.2. Package names and versions
-All packages have a name, e.g. “HUnit”. Package names are assumed to be unique. Cabal package names may contain letters, numbers and hyphens, but not spaces and may also not contain a hyphened section consisting of only numbers. The namespace for Cabal packages is flat, not hierarchical.
+他の<ruby><rb>作譜</rb><rt>プログラミング</rt></ruby>言語の中には，パッケージの概念を言語仕様に内包しているものがある。例えば，JAVA では，パッケージは型などの定義の有効範囲を規定する。Haskell の世界では，パッケージ自体は言語そのものではない。Haskell の<ruby><rb>算譜</rb><rt>プログラム</rt></ruby>は，モジュールおよび機能に関連して切り分けされたモジュールの集合であるパッケージからなる。それ故，Haskell におけるモジュール名の選択は，パッケージを利用する際はやはり重要である。
 
-Packages also have a version, e.g “1.1”. This matches the typical way in which packages are developed. Strictly speaking, each version of a package is independent, but usually they are very similar. Cabal package versions follow the conventional numeric style, consisting of a sequence of digits such as “1.0.1” or “2.0”. There are a range of common conventions for “versioning” packages, that is giving some meaning to the version number in terms of changes in the package, such as e.g. SemVer; however, for packages intended to be distributed via Hackage Haskell’s Package Versioning Policy applies (see also the PVP/SemVer FAQ section).
+#### 4.2.2. パッケージ名と<ruby><rb>版番号</rb><rt>バージョンナンバー</rt></ruby>
+すべてのパッケージは，"HUnit"のような，名前を持つ。パッケージ名は，他（のパッケージ）と重複してはならない。Cabal パッケージの名前は，文字，数字，ハイフンからなり，空白を含んではならず，ハイフンの後に数字のみがある部分も名前とはならない。Cabal パッケージの名前の有効範囲は全域であり，階層構造ではない。
 
-The combination of package name and version is called the package ID and is written with a hyphen to separate the name and version, e.g. “HUnit-1.1”.
+パッケージは，"1.1"のような<ruby><rb>版番号</rb><rt>バージョンナンバー</rt></ruby>を持つ。これは，パッケージが開発される典型的なやり方に適合する。厳密に述べると，パッケージのそれぞれの<ruby><rb>版</rb><rt>バージョン</rt></ruby>は独立しているが，通常は互いに似通っている。Cabal パッケージの<ruby><rb>版</rb><rt>バージョン</rt></ruby>は，数字のみの構成，すなわち，"1.0.1"や"2.0"のように，数字の並び列で表現する。「`SemiVer`」のようなパッケージの変更に応じてつけられる<ruby><rb>版番号</rb><rt>バージョンナンバー</rt></ruby>に意味を与える"versioning"パッケージには様々な規則があるが，[Hackage](http://hackage.haskell.org/) 経由で配布されるパッケージは，<ruby><rb>版番号</rb><rt>バージョンナンバー</rt></ruby>について Haskell のパッケージ<ruby><rb>版</rb><rt>バージョン</rt></ruby>作成方針（PVP/SemVer FAQ章を参照）が適用される。
 
-For Cabal packages, the combination of the package name and version uniquely identifies each package. Or to put it another way: two packages with the same name and version are considered to be the same.
+パッケージ名と<ruby><rb>版</rb><rt>バージョン</rt></ruby>の組み合わせは，パッケージ ID と呼ばれ，ハイフンで名前と<ruby><rb>版</rb><rt>バージョン</rt></ruby>をつなぐ（例：`"HUnit-1.1"`)。
 
-Strictly speaking, the package ID only identifies each Cabal source package; the same Cabal source package can be configured and built in different ways. There is a separate installed package ID that uniquely identifies each installed package instance. Most of the time however, users need not be aware of this detail.
+Cabal パッケージについては，パッケージ名と<ruby><rb>版</rb><rt>バージョン</rt></ruby>の組み合わせはパッケージごとに一意である。あるいは，別の言い方をすれば，同じ名前と<ruby><rb>版</rb><rt>バージョン</rt></ruby>のパッケージは同一とみなされる。
 
-#### 4.2.3. Kinds of package: Cabal vs GHC vs system
-It can be slightly confusing at first because there are various different notions of package floating around. Fortunately the details are not very complicated.
+厳密に言えば，パッケージ ID は，Cabal ソースパッケージを区別しているに過ぎない。同じ Cabal ソースパッケージでも，別々の方法で<ruby><rb>構成</rb><rt>コンフィギュア</rt></ruby>や<ruby><rb>構築</rb><rt>ビルド</rt></ruby>されることがある。別々に<ruby><rb>設置</rb><rt>インストール</rt></ruby>された同じパッケージの<ruby><rb>実体</rb><rt>インスタンス</rt></ruby>が，互いに異なったパッケージ ID で別のものと識別されることもある。しかし，多くの場合，ユーザーはこうした詳細を季にする必要はない。
+#### 4.2.3. パッケージの種類：Cabal・GHC・システム
 
-- Cabal packages
-Cabal packages are really source packages. That is they contain Haskell (and sometimes C) source code.
+最初は，パッケージに様々な種類があるので少しややこしいと思えるかもしれない。幸い，実際にはそれほど複雑な話ではない。
 
-Cabal packages can be compiled to produce GHC packages. They can also be translated into operating system packages.
-
+- Cabal パッケージ
+  　Cabal パッケージは，本当のソースパッケージである。つまり，Haskell (あるいは時々 C )のソースコードを含んでいる。
+  　Cabal パッケージは GHC パッケージを作成するためにコンパイルされることもある。これらは，OS のパッケージにも変換可能である。
 - GHC packages
-This is GHC’s view on packages. GHC only cares about library packages, not executables. Library packages have to be registered with GHC for them to be available in GHCi or to be used when compiling other programs or packages.
+  　これは，GHC から見たパッケージである。GHC は，ライブラリパッケージのみ関わり，実行可能プログラムには関与しない。ライブラリパッケージは，GHCi でや，コンパイル時に他のプログラムやパッケージから使えるようにするためには，GHC に登録しなければならない。
+  　パッケージの登録には，基盤的なツール，`ghc-pkg`が使われ，現在どんなパッケージが登録されているかなどの情報を得ることができる。
+  　GHC パッケージを手作業で作成する必要はない。ライブラリを含む Cabal ライブラリの<ruby><rb>構築</rb><rt>ビルド</rt></ruby>や<ruby><rb>設置</rb><rt>インストール</rt></ruby>が実行されると，これらは自動的に GHC に登録される。
+  　GHC 以外の Haskell の<ruby><rb>実装</rb><rt>インプリメンテーション</rt></ruby>でも，基本的には同じようなパッケージ登録の概念がある。Cabal は，こうした違いを吸収し，仔細について気にしなくても良いようにしてくれる。
 
-The low-level tool ghc-pkg is used to register GHC packages and to get information on what packages are currently registered.
+- <ruby><rb>操作系</rb><rt>OS</rt></ruby>のパッケージ
+  　Linux や ~~Mac OS X~~ (macOS) のような<ruby><rb>（個々の）操作系</rb><rt>OS</rt></ruby>には，パッケージについて，固有の概念があり，パッケージを<ruby><rb>設置</rb><rt>インストール</rt></ruby>したり管理するツールを備えている。
 
-You never need to make GHC packages manually. When you build and install a Cabal package containing a library then it gets registered with GHC automatically.
+  　Cabal パッケージ<ruby><rb>形式</rb><rt>フォーマット</rt></ruby>は，Cabal パッケージをほぼ自動的に<ruby><rb>操作系</rb><rt>OS</rt></ruby>パッケージに変換できるよう設計されている。通常は，こうした変換は1:1の関係にあり，ひとつの Cabal パッケージがひとつの <ruby><rb>操作系</rb><rt>OS</rt></ruby>パッケージに変換される。
+  　また，Cabal パッケージから Windows用<ruby><rb>設置プログラム</rb><rt>インストーラ</rt></ruby>を生成することも可能である。もっとも，この場合，依存ライブラリすべてを含んだ状態で扱われ，ライブラリは別々には扱われない。
 
-Haskell implementations other than GHC have essentially the same concept of registered packages. For the most part, Cabal hides the slight differences.
+#### 4.2.4. 配布単位
 
-Operating system packages
-On operating systems like Linux and Mac OS X, the system has a specific notion of a package and there are tools for installing and managing packages.
+Cabalパッケージは，配布単位となる。これが意味するところは，Cabal パッケージはそれぞれ独立してソースコードまたはバイナリ形式で配布することが可能ということである。もちろん，パッケージごとの依存はあるだろうが，一緒に利用できるパッケージの<ruby><rb>版</rb><rt>バージョン</rt></ruby>にはある程度の融通が効くのことが多いので，パッケージを個別に配布できるということには意味がある。
 
-The Cabal package format is designed to allow Cabal packages to be translated, mostly-automatically, into operating system packages. They are usually translated 1:1, that is a single Cabal package becomes a single system package.
-
-It is also possible to make Windows installers from Cabal packages, though this is typically done for a program together with all of its library dependencies, rather than packaging each library separately.
-
-#### 4.2.4. Unit of distribution
-The Cabal package is the unit of distribution. What this means is that each Cabal package can be distributed on its own in source or binary form. Of course there may be dependencies between packages, but there is usually a degree of flexibility in which versions of packages can work together so distributing them independently makes sense.
 
 It is perhaps easiest to see what being “the unit of distribution” means by contrast to an alternative approach. Many projects are made up of several interdependent packages and during development these might all be kept under one common directory tree and be built and tested together. When it comes to distribution however, rather than distributing them all together in a single tarball, it is required that they each be distributed independently in their own tarballs.
 
